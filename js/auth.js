@@ -1,29 +1,15 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
+const loginBtn = document.getElementById("loginBtn");
+const signupBtn = document.getElementById("signupBtn");
 
-<body class="bg-blue-100 flex justify-center items-center h-screen">
+if (loginBtn) {
+  loginBtn.onclick = () => {
+    alert("Login successful");
+    window.location.href = "dashboard.html";
+  };
+}
 
-<div class="bg-white p-6 rounded-2xl shadow-lg w-80">
-
-  <h2 class="text-xl font-bold text-blue-900 mb-4 text-center">Login</h2>
-
-  <input id="email" placeholder="Email" class="border border-blue-300 w-full mb-3 p-2 rounded">
-  <input id="password" type="password" placeholder="Password" class="border border-blue-300 w-full mb-3 p-2 rounded">
-
-  <button id="loginBtn" class="bg-blue-300 text-white w-full p-2 rounded mb-2">
-    Login
-  </button>
-
-  <button id="signupBtn" class="border border-blue-300 text-blue-900 w-full p-2 rounded">
-    Create Account
-  </button>
-
-</div>
-
-<script src="js/auth.js"></script>
-
-</body>
-</html>
+if (signupBtn) {
+  signupBtn.onclick = () => {
+    alert("Account created");
+  };
+}
