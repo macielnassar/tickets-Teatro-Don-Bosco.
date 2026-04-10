@@ -1,42 +1,29 @@
-import { auth } from './firebase.js';
-const signupBtn = document.getElementById('signupBtn');
-const logoutBtn = document.getElementById('logoutBtn');
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
 
-if (loginBtn) {
-  loginBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
-    try {
-      await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
-      window.location.href = 'dashboard.html';
-    } catch (error) {
-      alert(error.message);
-    }
-  });
-}
+<body class="bg-blue-100 flex justify-center items-center h-screen">
 
-if (signupBtn) {
-  signupBtn.addEventListener('click', async () => {
-    try {
-      await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
-      alert('Account created successfully');
-      window.location.href = 'dashboard.html';
-    } catch (error) {
-      alert(error.message);
-    }
-  });
-}
+<div class="bg-white p-6 rounded-2xl shadow-lg w-80">
 
-if (logoutBtn) {
-  logoutBtn.addEventListener('click', async () => {
-    await signOut(auth);
-    window.location.href = 'login.html';
-  });
-}
+  <h2 class="text-xl font-bold text-blue-900 mb-4 text-center">Login</h2>
 
-onAuthStateChanged(auth, (user) => {
-  const isDashboard = window.location.pathname.includes('dashboard.html');
+  <input id="email" placeholder="Email" class="border border-blue-300 w-full mb-3 p-2 rounded">
+  <input id="password" type="password" placeholder="Password" class="border border-blue-300 w-full mb-3 p-2 rounded">
 
-  if (isDashboard && !user) {
-    window.location.href = 'login.html';
-  }
-});
+  <button id="loginBtn" class="bg-blue-300 text-white w-full p-2 rounded mb-2">
+    Login
+  </button>
+
+  <button id="signupBtn" class="border border-blue-300 text-blue-900 w-full p-2 rounded">
+    Create Account
+  </button>
+
+</div>
+
+<script src="js/auth.js"></script>
+
+</body>
+</html>
