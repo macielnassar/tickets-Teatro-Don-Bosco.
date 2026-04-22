@@ -1,83 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Seat Reservation</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
 <style>
-body { font-family: Arial; background:#f2f5f9; text-align:center; }
-
-.seats {
-  display:grid;
-  grid-template-columns:repeat(10,1fr);
-  gap:10px;
-  max-width:400px;
-  margin:20px auto;
-}
-
-.seat {
-  width:30px;
-  height:30px;
-  background:black;
-  cursor:pointer;
-}
-
-.selected { background:blue; }
-.occupied { background:red; cursor:not-allowed; }
-
-button {
-  padding:10px 20px;
-  margin-top:20px;
-}
+body { font-family: 'Poppins', sans-serif; }
 </style>
 </head>
 
-<body>
+<body class="bg-gradient-to-br from-blue-100 to-blue-300 min-h-screen">
 
-<h1>Seat Reservation</h1>
+<nav class="flex justify-between p-6 text-blue-900">
+  <h1 class="text-2xl font-bold">🎭 Teatro Don Bosco</h1>
+  <a href="dashboard.html">Dashboard</a>
+</nav>
 
-<div class="seats" id="seats"></div>
+<div class="text-center mt-24">
+  <h1 class="text-5xl font-bold text-blue-900 mb-6">
+    Reserve Your Seats 🎟️
+  </h1>
 
-<p id="summary">Selected: 0</p>
+  <a href="seats.html" class="bg-white px-8 py-4 rounded-2xl shadow-lg hover:scale-105 transition">
+    Choose your seat
+  </a>
+</div>
 
-<button id="confirm">Confirm Reservation</button>
-
-<!-- 🔥 FIREBASE -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDJclflFy2DKoMM-7_yh0j-emyPa4RkALw",
-  authDomain: "ticketsdonb.firebaseapp.com",
-  projectId: "ticketsdonb",
-  appId: "1:273721684602:web:993dd518cfee19056c01c3"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-const seatsContainer = document.getElementById("seats");
-const summary = document.getElementById("summary");
-const confirmBtn = document.getElementById("confirm");
-
-let selected = [];
-let occupied = [];
-
-// 🔥 CARGAR DATOS DESDE FIREBASE
-async function loadSeats() {
-  const data = await getDocs(collection(db, "reservas"));
-  occupied = data.docs.map(doc => doc.data().seat);
-  createSeats();
-}
-
-// 🎟️ CREAR ASIENTOS
-function createSeats() {
-  for (let i = 1; i <= 50; i++) {
-    const seat =
+</body>
