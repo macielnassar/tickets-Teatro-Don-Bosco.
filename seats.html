@@ -2,102 +2,50 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Seat Selection</title>
+<title>Seat Reservation</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body { margin:0; font-family:Arial; background:#f2f5f9; color:#1e293b; }
-header { background:#0f172a; color:white; padding:20px; text-align:center; }
-main { max-width:900px; margin:auto; padding:30px; }
-.screen { background:#cbd5e1; padding:10px; text-align:center; border-radius:6px; margin-bottom:25px; }
+body { font-family: Arial; background:#f2f5f9; text-align:center; }
 
-.controls { text-align:center; margin-bottom:25px; }
-.controls button { padding:10px 22px; border:none; border-radius:8px; margin:0 8px; cursor:pointer; }
-.adult-btn { background:#0f172a; color:white; }
-.child-btn { background:#60a5fa; color:white; }
-
-.seats { display:grid; grid-template-columns:repeat(10,1fr); gap:14px; justify-items:center; margin-bottom:30px; }
+.seats {
+  display:grid;
+  grid-template-columns:repeat(10,1fr);
+  gap:10px;
+  max-width:400px;
+  margin:20px auto;
+}
 
 .seat {
-  width:34px; height:26px; background:#000; border-radius:6px 6px 4px 4px;
-  cursor:pointer; position:relative;
-}
-.seat::before {
-  content:""; position:absolute; top:-10px; left:3px;
-  width:28px; height:10px; background:#000; border-radius:6px 6px 0 0;
+  width:30px;
+  height:30px;
+  background:black;
+  cursor:pointer;
 }
 
-/* estados */
-.adult { background:#0f172a; }
-.adult::before { background:#0f172a; }
+.selected { background:blue; }
+.occupied { background:red; cursor:not-allowed; }
 
-.child { background:#60a5fa; }
-.child::before { background:#60a5fa; }
-
-.occupied {
-  background:red !important;
-  cursor:not-allowed;
-}
-.occupied::before { background:red !important; }
-
-.summary { text-align:center; margin-bottom:20px; }
-
-#confirm {
-  display:block; margin:auto; padding:14px 34px;
-  background:#0f172a; color:white; border:none;
-  border-radius:10px; cursor:pointer;
-}
-
-#modal {
-  display:none; position:fixed; inset:0;
-  background:rgba(0,0,0,0.6);
-  justify-content:center; align-items:center;
-}
-
-.modal-box {
-  background:white; padding:30px;
-  border-radius:14px; text-align:center;
+button {
+  padding:10px 20px;
+  margin-top:20px;
 }
 </style>
 </head>
 
 <body>
 
-<header>
-  <h1>Choose Your Seats</h1>
-</header>
-
-<main>
-
-<div class="controls">
-  <button class="adult-btn" id="adultBtn">Adult ($10)</button>
-  <button class="child-btn" id="childBtn">Child ($6)</button>
-</div>
-
-<div class="screen">STAGE</div>
+<h1>Seat Reservation</h1>
 
 <div class="seats" id="seats"></div>
 
-<div class="summary" id="summary"></div>
+<p id="summary">Selected: 0</p>
 
-<button id="confirm">Confirm</button>
+<button id="confirm">Confirm Reservation</button>
 
-</main>
-
-<div id="modal">
-  <div class="modal-box">
-    <h2>Purchase Successful 🎉</h2>
-    <button onclick="location.reload()">OK</button>
-  </div>
-</div>
-
-<!-- 🔥 FIREBASE + FIRESTORE -->
+<!-- 🔥 FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { 
-  getAuth, onAuthStateChanged 
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
 import {
   getFirestore,
   collection,
@@ -113,102 +61,23 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getFirestore(app);
 
 const seatsContainer = document.getElementById("seats");
 const summary = document.getElementById("summary");
 const confirmBtn = document.getElementById("confirm");
 
-let currentType = "adult";
-let selectedSeats = [];
-let occupiedSeats = [];
+let selected = [];
+let occupied = [];
 
-const prices = { adult: 10, child: 6 };
-
-document.getElementById("adultBtn").onclick = () => currentType = "adult";
-document.getElementById("childBtn").onclick = () => currentType = "child";
-
-// 🔒 PROTEGER (requiere login)
-let currentUser = null;
-
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    window.location.href = "login.html";
-  } else {
-    currentUser = user;
-    loadSeats();
-  }
-});
-
-// 🔥 CARGAR ASIENTOS DESDE FIREBASE
+// 🔥 CARGAR DATOS DESDE FIREBASE
 async function loadSeats() {
-  const querySnapshot = await getDocs(collection(db, "reservas"));
-  occupiedSeats = querySnapshot.docs.map(doc => doc.data().seat);
-
+  const data = await getDocs(collection(db, "reservas"));
+  occupied = data.docs.map(doc => doc.data().seat);
   createSeats();
 }
 
 // 🎟️ CREAR ASIENTOS
 function createSeats() {
-  seatsContainer.innerHTML = "";
-
-  for (let i = 1; i <= 60; i++) {
-    const seat = document.createElement("div");
-    seat.classList.add("seat");
-    seat.dataset.id = i;
-
-    if (occupiedSeats.includes(i)) {
-      seat.classList.add("occupied");
-    }
-
-    seat.onclick = () => {
-      if (seat.classList.contains("occupied")) return;
-
-      const existing = selectedSeats.find(s => s.id === i);
-
-      if (existing) {
-        selectedSeats = selectedSeats.filter(s => s.id !== i);
-        seat.classList.remove("adult", "child");
-      } else {
-        selectedSeats.push({ id: i, type: currentType });
-        seat.classList.add(currentType);
-      }
-
-      updateSummary();
-    };
-
-    seatsContainer.appendChild(seat);
-  }
-}
-
-// 💰 RESUMEN
-function updateSummary() {
-  let total = 0;
-  selectedSeats.forEach(s => total += prices[s.type]);
-
-  summary.innerHTML = `
-    Seats: ${selectedSeats.length}<br>
-    Total: $${total}
-  `;
-}
-
-// 💾 GUARDAR EN FIREBASE
-confirmBtn.onclick = async () => {
-  if (selectedSeats.length === 0) return;
-
-  for (let s of selectedSeats) {
-    await addDoc(collection(db, "reservas"), {
-      seat: s.id,
-      type: s.type,
-      user: currentUser.email,
-      time: new Date()
-    });
-  }
-
-  document.getElementById("modal").style.display = "flex";
-};
-</script>
-
-</body>
-</html>
+  for (let i = 1; i <= 50; i++) {
+    const seat =
