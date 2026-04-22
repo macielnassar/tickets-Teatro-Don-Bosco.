@@ -23,63 +23,18 @@
 
 </div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { 
-    getAuth, 
-    signInWithEmailAndPassword, 
-    createUserWithEmailAndPassword,
-    onAuthStateChanged
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-  // 🔑 TU CONFIG REAL
-  const firebaseConfig = {
-    apiKey: "AIzaSyDJclflFy2DKoMM-7_yh0j-emyPa4RkALw",
-    authDomain: "ticketsdonb.firebaseapp.com",
-    projectId: "ticketsdonb",
-    storageBucket: "ticketsdonb.firebasestorage.app",
-    messagingSenderId: "273721684602",
-    appId: "1:273721684602:web:993dd518cfee19056c01c3"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-
-  const email = document.getElementById("email");
-  const password = document.getElementById("password");
-
-  // 🔓 LOGIN
-  document.getElementById("loginBtn").addEventListener("click", () => {
-    signInWithEmailAndPassword(auth, email.value, password.value)
-      .then(user => {
-        alert("Bienvenido " + user.user.email);
-      })
-      .catch(err => {
-        alert(err.message);
-      });
-  });
-
-  // 🆕 REGISTRO
-  document.getElementById("signupBtn").addEventListener("click", () => {
-    createUserWithEmailAndPassword(auth, email.value, password.value)
-      .then(user => {
-        alert("Cuenta creada correctamente");
-      })
-      .catch(err => {
-        alert(err.message);
-      });
-  });
-
-  // 👁️ SESIÓN ACTIVA
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      console.log("Usuario activo:", user.email);
-    } else {
-      console.log("No hay sesión");
-    }
-  });
-
-</script>
+<script src="js/auth.js"></script>
 
 </body>
 </html>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+
+  const firebaseConfig = {
+    apiKey: "...",
+    authDomain: "...",
+    projectId: "...",
+  };
+
+  const app = initializeApp(firebaseConfig);
+</script>
