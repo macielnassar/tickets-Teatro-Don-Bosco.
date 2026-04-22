@@ -34,15 +34,32 @@
       font-size: 14px;
     }
 
+    /* SEAT SHAPE */
     .seat {
-      width: 34px;
-      height: 34px;
-      border-radius: 8px;
+      width: 32px;
+      height: 26px;
+      background: #000;
+      border-radius: 6px 6px 4px 4px;
+      position: relative;
       cursor: pointer;
-      background: #d9e6f2;
+    }
+
+    .seat::before {
+      content: "";
+      position: absolute;
+      top: -10px;
+      left: 3px;
+      width: 26px;
+      height: 10px;
+      background: #000;
+      border-radius: 6px 6px 0 0;
     }
 
     .selected-adult {
+      background: #0b3c5d;
+    }
+
+    .selected-adult::before {
       background: #0b3c5d;
     }
 
@@ -50,9 +67,17 @@
       background: #6baed6;
     }
 
+    .selected-child::before {
+      background: #6baed6;
+    }
+
     .occupied {
-      background: #aaa;
+      background: #555;
       cursor: not-allowed;
+    }
+
+    .occupied::before {
+      background: #555;
     }
 
     .screen {
@@ -67,7 +92,7 @@
     .seats {
       display: grid;
       grid-template-columns: repeat(10, 1fr);
-      gap: 10px;
+      gap: 12px;
       justify-items: center;
       margin-bottom: 30px;
     }
@@ -113,6 +138,7 @@
       cursor: pointer;
     }
 
+    /* MODAL */
     #confirmationModal {
       display: none;
       position: fixed;
@@ -123,12 +149,22 @@
       z-index: 999;
     }
 
-    #confirmationModal div {
+    #confirmationModal .modal-content {
       background: white;
       padding: 30px;
       border-radius: 12px;
       width: 320px;
       text-align: center;
+    }
+
+    #closeModal {
+      margin-top: 20px;
+      padding: 10px 25px;
+      background: #0b3c5d;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -166,16 +202,87 @@
 
 </main>
 
+<!-- CONFIRMATION MODAL -->
 <div id="confirmationModal">
-  <div>
+  <div class="modal-content">
     <h2>Purchase Successful 🎉</h2>
-    <p>Your seats have been reserved.</p>
-    <p id="purchaseDetails"></p>
-    <button onclick="closeModal()">Close</button>
+    <p>Your seats have been successfully reserved.</p>
+    <button id="closeModal">Close</button>
   </div>
 </div>
 
-<script src="js/seats.js"></script>
+<script>
+  const seatsContainer = document.getElementById("seats");
+  const summary = document.getElementById("summary");
+  const confirmBtn = document.getElementById("confirm");
+  const modal = document.getElementById("confirmationModal");
+  const closeModal = document.getElementById("closeModal");
+
+  const adultBtn = document.getElementById("adultMode");
+  const childBtn = document.getElementById("childMode");
+
+  let currentType = "adult";
+  let selectedSeats = [];
+
+  const prices = {
+    adult: 10,
+    child: 6
+  };
+
+  adultBtn.onclick = () => currentType = "adult";
+  childBtn.onclick = () => currentType = "child";
+
+  // CREATE SEATS
+  for (let i = 1; i <= 60; i++) {
+    const seat = document.createElement("div");
+    seat.classList.add("seat");
+    seat.dataset.id = i;
+
+    // Random occupied seats
+    if (Math.random() < 0.15) {
+      seat.classList.add("occupied");
+    }
+
+    seat.onclick = () => {
+      if (seat.classList.contains("occupied")) return;
+
+      const index = selectedSeats.findIndex(s => s.id === i);
+
+      if (index >= 0) {
+        selectedSeats.splice(index, 1);
+        seat.classList.remove("selected-adult", "selected-child");
+      } else {
+        selectedSeats.push({ id: i, type: currentType });
+        seat.classList.add(
+          currentType === "adult" ? "selected-adult" : "selected-child"
+        );
+      }
+
+      updateSummary();
+    };
+
+    seatsContainer.appendChild(seat);
+  }
+
+  function updateSummary() {
+    let total = 0;
+    selectedSeats.forEach(s => total += prices[s.type]);
+
+    summary.innerHTML = `
+      Selected seats: ${selectedSeats.length}<br>
+      Total: $${total}
+    `;
+  }
+
+  confirmBtn.onclick = () => {
+    if (selectedSeats.length === 0) return;
+    modal.style.display = "flex";
+  };
+
+  closeModal.onclick = () => {
+    modal.style.display = "none";
+  };
+</script>
 
 </body>
 </html>
