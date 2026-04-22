@@ -1,113 +1,94 @@
-const container = document.getElementById("seats");
+// ===============================
+// ELEMENTOS DEL DOM
+// ===============================
 const buyBtn = document.getElementById("buyBtn");
+const typeSection = document.getElementById("typeSection");
+const seatSection = document.getElementById("seatSection");
+const seatMap = document.getElementById("seatMap");
 
-const rows = ["A","B","C","D","E"];
-const seatsPerRow = 8;
+const adultCountEl = document.getElementById("adultCount");
+const childCountEl = document.getElementById("childCount");
 
-let selected = [];
-let taken = JSON.parse(localStorage.getItem("takenSeats")) || [];
+// ===============================
+// ESTADO
+// ===============================
+let adultCount = 0;
+let childCount = 0;
 
-// tipo de asiento
-function getSeatType(row) {
-  if (row === "A" || row === "B") return "adult";
-  return "child";
-}
+// Número total de asientos
+const totalSeats = 40;
 
-rows.forEach(row => {
-  const rowDiv = document.createElement("div");
-  rowDiv.className = "flex gap-2 justify-center mb-2";
+// Asientos ocupados (ejemplo)
+const occupiedSeats = [5, 12, 19, 26];
 
-  for (let i = 1; i <= seatsPerRow; i++) {
-    const id = row + i;
-    const type = getSeatType(row);
-
-    const seat = document.createElement("div");
-    seat.innerText = id;
-
-    let base = "w-10 h-10 flex items-center justify-center rounded-full cursor-pointer text-xs ";
-
-    // colores por tipo
-    if (taken.includes(id)) {
-      seat.className = base + "bg-gray-400";
-    } else if (type === "adult") {
-      seat.className = base + "bg-blue-400 text-white";
-    } else {
-      seat.className = base + "bg-green-400 text-white";
-    }
-
-    seat.onclick = () => {
-      if (taken.includes(id)) return;
-
-      if (selected.includes(id)) {
-        selected = selected.filter(s => s !== id);
-      } else {
-        selected.push(id);
-      }
-
-      renderSeats();
-    };
-
-    rowDiv.appendChild(seat);
-  }
-
-  container.appendChild(rowDiv);
+// ===============================
+// PASO 1 → BUY TICKETS
+// ===============================
+buyBtn.addEventListener("click", () => {
+  // Muestra el paso 2 y 3
+  typeSection.classList.remove("hidden");
+  seatSection.classList.remove("hidden");
 });
 
-function renderSeats() {
-  container.innerHTML = "";
-  rows.forEach(row => {
-    const rowDiv = document.createElement("div");
-    rowDiv.className = "flex gap-2 justify-center mb-2";
-
-    for (let i = 1; i <= seatsPerRow; i++) {
-      const id = row + i;
-      const type = getSeatType(row);
-
-      const seat = document.createElement("div");
-
-      let base = "w-10 h-10 flex items-center justify-center rounded-full cursor-pointer text-xs ";
-
-      if (taken.includes(id)) {
-        seat.className = base + "bg-gray-400";
-      } else if (selected.includes(id)) {
-        seat.className = base + "bg-yellow-400";
-      } else if (type === "adult") {
-        seat.className = base + "bg-blue-400 text-white";
-      } else {
-        seat.className = base + "bg-green-400 text-white";
-      }
-
-      seat.innerText = id;
-
-      seat.onclick = () => {
-        if (taken.includes(id)) return;
-
-        if (selected.includes(id)) {
-          selected = selected.filter(s => s !== id);
-        } else {
-          selected.push(id);
-        }
-
-        renderSeats();
-      };
-
-      rowDiv.appendChild(seat);
-    }
-
-    container.appendChild(rowDiv);
-  });
+// ===============================
+// ACTUALIZAR CONTADORES
+// ===============================
+function updateCounters() {
+  adultCountEl.textContent = adultCount;
+  childCountEl.textContent = childCount;
 }
 
-// comprar
-buyBtn.onclick = () => {
-  if (selected.length === 0) {
-    alert("Selecciona asientos");
-    return;
+// ===============================
+// PASO 3 → CREAR MAPA DE ASIENTOS
+// ===============================
+function createSeatMap() {
+  seatMap.innerHTML = "";
+
+  for (let i = 1; i <= totalSeats; i++) {
+    const seat = document.createElement("div");
+    seat.classList.add("seat");
+    seat.dataset.seatNumber = i;
+
+    // Si el asiento está ocupado
+    if (occupiedSeats.includes(i)) {
+      seat.classList.add("occupied");
+    } else {
+      seat.addEventListener("click", () => handleSeatClick(seat));
+    }
+
+    seatMap.appendChild(seat);
+  }
+}
+
+// ===============================
+// LÓGICA DE SELECCIÓN
+// ===============================
+function handleSeatClick(seat) {
+  // Si ya estaba seleccionado → deseleccionar
+  if (seat.classList.contains("selected")) {
+    if (seat.dataset.type === "adult") adultCount--;
+    if (seat.dataset.type === "child") childCount--;
+
+    seat.classList.remove("selected", "adult", "child");
+    seat.dataset.type = "";
+  } else {
+    // Tipo seleccionado en el paso 2
+    const selectedType = document.querySelector(
+      'input[name="seatType"]:checked'
+    ).value;
+
+    seat.classList.add("selected", selectedType);
+    seat.dataset.type = selectedType;
+
+    if (selectedType === "adult") adultCount++;
+    if (selectedType === "child") childCount++;
   }
 
-  taken = [...taken, ...selected];
-  localStorage.setItem("takenSeats", JSON.stringify(taken));
+  updateCounters();
+}
 
-  alert("Compra realizada");
-  location.reload();
-};
+// ===============================
+// INICIALIZAR
+// ===============================
+createSeatMap();
+updateCounters();
