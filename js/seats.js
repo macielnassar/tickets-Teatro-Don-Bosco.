@@ -6,6 +6,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const modal = document.getElementById("confirmationModal");
   const detailsText = document.getElementById("purchaseDetails");
 
+  const adultBtn = document.getElementById("adultMode");
+  const childBtn = document.getElementById("childMode");
+
   const ROWS = 6;
   const COLS = 10;
 
@@ -15,55 +18,40 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   let selectedSeats = [];
+  let currentType = "adult";
 
-  // CREATE SEATS
-  for (let row = 1; row <= ROWS; row++) {
-    for (let col = 1; col <= COLS; col++) {
-      const seat = document.createElement("div");
-      seat.classList.add("seat");
+  adultBtn.onclick = () => currentType = "adult";
+  childBtn.onclick = () => currentType = "child";
 
-      if (row <= 3) {
-        seat.classList.add("adult");
-        seat.dataset.type = "adult";
+  for (let i = 0; i < ROWS * COLS; i++) {
+    const seat = document.createElement("div");
+    seat.classList.add("seat");
+
+    seat.addEventListener("click", () => {
+      if (seat.classList.contains("occupied")) return;
+
+      if (seat.classList.contains("selected-adult") || seat.classList.contains("selected-child")) {
+        seat.classList.remove("selected-adult", "selected-child");
+        selectedSeats = selectedSeats.filter(s => s !== seat);
       } else {
-        seat.classList.add("child");
-        seat.dataset.type = "child";
+        seat.classList.add(currentType === "adult" ? "selected-adult" : "selected-child");
+        seat.dataset.type = currentType;
+        selectedSeats.push(seat);
       }
 
-      seat.dataset.id = `R${row}-S${col}`;
+      updateSummary();
+    });
 
-      seat.addEventListener("click", () => toggleSeat(seat));
-      seatContainer.appendChild(seat);
-    }
-  }
-
-  function toggleSeat(seat) {
-    if (seat.classList.contains("occupied")) return;
-
-    if (seat.classList.contains("selected")) {
-      seat.classList.remove("selected");
-      selectedSeats = selectedSeats.filter(s => s !== seat);
-    } else {
-      seat.classList.add("selected");
-      selectedSeats.push(seat);
-    }
-
-    updateSummary();
+    seatContainer.appendChild(seat);
   }
 
   function updateSummary() {
     let total = 0;
-    selectedSeats.forEach(seat => {
-      total += PRICES[seat.dataset.type];
-    });
-
-    summary.innerHTML = `
-      Selected seats: ${selectedSeats.length}<br>
-      Total: $${total}
-    `;
+    selectedSeats.forEach(seat => total += PRICES[seat.dataset.type]);
+    summary.innerHTML = `Selected seats: ${selectedSeats.length}<br>Total: $${total}`;
   }
 
-  confirmBtn.addEventListener("click", () => {
+  confirmBtn.onclick = () => {
     if (selectedSeats.length === 0) {
       alert("Please select at least one seat.");
       return;
@@ -74,13 +62,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     selectedSeats.forEach(seat => {
       seat.dataset.type === "adult" ? adultCount++ : childCount++;
-      seat.classList.remove("selected");
+      seat.classList.remove("selected-adult", "selected-child");
       seat.classList.add("occupied");
     });
 
-    const total =
-      adultCount * PRICES.adult +
-      childCount * PRICES.child;
+    const total = adultCount * PRICES.adult + childCount * PRICES.child;
 
     detailsText.innerHTML = `
       Adult tickets: ${adultCount}<br>
@@ -91,10 +77,8 @@ document.addEventListener("DOMContentLoaded", () => {
     modal.style.display = "flex";
     selectedSeats = [];
     updateSummary();
-  });
-
-  window.closeModal = function () {
-    modal.style.display = "none";
   };
+
+  window.closeModal = () => modal.style.display = "none";
 
 });
