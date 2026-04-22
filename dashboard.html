@@ -1,28 +1,24 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <title>My Tickets</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-blue-100">
+<body class="bg-slate-100 min-h-screen">
 
-<h1 class="text-center text-2xl font-bold mt-6 text-blue-900">
-My Tickets
-</h1>
+  <header class="bg-slate-900 text-white text-center p-6 shadow">
+    <h1 class="text-3xl font-bold">My Tickets</h1>
+    <p class="text-sm mt-2">Your purchased reservations</p>
+  </header>
 
-<div id="tickets" class="text-center mt-6"></div>
+  <main class="max-w-3xl mx-auto p-6">
+    <div id="tickets" class="space-y-4"></div>
+  </main>
 
-<script>
-const tickets = JSON.parse(localStorage.getItem("myTickets")) || [];
-
-const div = document.getElementById("tickets");
-
-if (tickets.length === 0) {
-  div.innerText = "No tickets yet";
-} else {
-  div.innerText = "Your seats: " + tickets.join(", ");
-}
-</script>
+  <script type="module" src="tickets.js"></script>
 
 </body>
 </html>
