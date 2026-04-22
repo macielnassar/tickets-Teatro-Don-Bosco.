@@ -16,9 +16,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const adultBtn = document.getElementById("adultMode");
   const childBtn = document.getElementById("childMode");
 
-  const ROWS = 6;
-  const COLS = 10;
-
   const PRICES = {
     adult: 10,
     child: 6
@@ -26,31 +23,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   let selectedSeats = [];
   let currentType = "adult";
-  let occupiedSeats = [];
 
   adultBtn.onclick = () => currentType = "adult";
   childBtn.onclick = () => currentType = "child";
 
-  // CARGAR ASIENTOS YA RESERVADOS DESDE FIREBASE
-  const snapshot = await getDocs(collection(db, "tickets"));
-
-  snapshot.forEach(doc => {
-    const data = doc.data();
-    if (data.seats) {
-      occupiedSeats.push(...data.seats.map(String));
-    }
-  });
-
-  for (let i = 0; i < ROWS * COLS; i++) {
-    const seatNumber = String(i + 1);
+  // 1. CREAR ASIENTOS VISIBLES PRIMERO
+  for (let i = 1; i <= 60; i++) {
     const seat = document.createElement("div");
-
     seat.classList.add("seat");
-    seat.dataset.number = seatNumber;
-
-    if (occupiedSeats.includes(seatNumber)) {
-      seat.classList.add("occupied");
-    }
+    seat.dataset.number = i;
 
     seat.addEventListener("click", () => {
       if (seat.classList.contains("occupied")) return;
@@ -73,6 +54,29 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     seatContainer.appendChild(seat);
+  }
+
+  // 2. CARGAR ASIENTOS OCUPADOS DESDE FIREBASE
+  try {
+    const snapshot = await getDocs(collection(db, "tickets"));
+
+    snapshot.forEach(doc => {
+      const data = doc.data();
+
+      if (data.seats) {
+        data.seats.forEach(number => {
+          const seat = document.querySelector(
+            `[data-number="${number}"]`
+          );
+
+          if (seat) {
+            seat.classList.add("occupied");
+          }
+        });
+      }
+    });
+  } catch (error) {
+    console.log("Error loading seats:", error);
   }
 
   function updateSummary() {
