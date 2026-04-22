@@ -1,13 +1,11 @@
 import { db, auth } from "./firebase.js";
 import {
   collection,
-  addDoc,
-  getDocs,
-  serverTimestamp
+  addDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-document.addEventListener("DOMContentLoaded", async () => {
-  const seatContainer = document.getElementById("seats");
+document.addEventListener("DOMContentLoaded", () => {
+  const seatsContainer = document.getElementById("seats");
   const summary = document.getElementById("summary");
   const confirmBtn = document.getElementById("confirm");
   const modal = document.getElementById("confirmationModal");
@@ -16,74 +14,55 @@ document.addEventListener("DOMContentLoaded", async () => {
   const adultBtn = document.getElementById("adultMode");
   const childBtn = document.getElementById("childMode");
 
-  const PRICES = {
+  let currentType = "adult";
+  let selectedSeats = [];
+
+  const prices = {
     adult: 10,
     child: 6
   };
 
-  let selectedSeats = [];
-  let currentType = "adult";
-
   adultBtn.onclick = () => currentType = "adult";
   childBtn.onclick = () => currentType = "child";
 
-  // 1. CREAR ASIENTOS VISIBLES PRIMERO
+  // CREAR ASIENTOS VISIBLES
   for (let i = 1; i <= 60; i++) {
     const seat = document.createElement("div");
     seat.classList.add("seat");
     seat.dataset.number = i;
 
-    seat.addEventListener("click", () => {
+    seat.onclick = () => {
       if (seat.classList.contains("occupied")) return;
 
-      if (
-        seat.classList.contains("selected-adult") ||
-        seat.classList.contains("selected-child")
-      ) {
+      const alreadySelected = selectedSeats.find(s => s.number == i);
+
+      if (alreadySelected) {
+        selectedSeats = selectedSeats.filter(s => s.number != i);
         seat.classList.remove("selected-adult", "selected-child");
-        selectedSeats = selectedSeats.filter(s => s !== seat);
       } else {
+        selectedSeats.push({
+          number: i,
+          type: currentType
+        });
+
         seat.classList.add(
-          currentType === "adult" ? "selected-adult" : "selected-child"
+          currentType === "adult"
+            ? "selected-adult"
+            : "selected-child"
         );
-        seat.dataset.type = currentType;
-        selectedSeats.push(seat);
       }
 
       updateSummary();
-    });
+    };
 
-    seatContainer.appendChild(seat);
-  }
-
-  // 2. CARGAR ASIENTOS OCUPADOS DESDE FIREBASE
-  try {
-    const snapshot = await getDocs(collection(db, "tickets"));
-
-    snapshot.forEach(doc => {
-      const data = doc.data();
-
-      if (data.seats) {
-        data.seats.forEach(number => {
-          const seat = document.querySelector(
-            `[data-number="${number}"]`
-          );
-
-          if (seat) {
-            seat.classList.add("occupied");
-          }
-        });
-      }
-    });
-  } catch (error) {
-    console.log("Error loading seats:", error);
+    seatsContainer.appendChild(seat);
   }
 
   function updateSummary() {
     let total = 0;
 
     selectedSeats.forEach(seat => {
-      total += PRICES[seat.dataset.type];
+      total += prices[seat.type];
     });
 
     summary.innerHTML = `
@@ -98,42 +77,30 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    let adultCount = 0;
-    let childCount = 0;
-    let seatNumbers = [];
-
-    selectedSeats.forEach(seat => {
-      if (seat.dataset.type === "adult") {
-        adultCount++;
-      } else {
-        childCount++;
-      }
-
-      seatNumbers.push(seat.dataset.number);
-    });
-
-    const total = adultCount * PRICES.adult + childCount * PRICES.child;
+    const adultCount = selectedSeats.filter(s => s.type === "adult").length;
+    const childCount = selectedSeats.filter(s => s.type === "child").length;
+    const total = adultCount * 10 + childCount * 6;
+    const seatNumbers = selectedSeats.map(s => s.number);
 
     try {
       await addDoc(collection(db, "tickets"), {
-        userEmail: auth.currentUser ? auth.currentUser.email : "guest",
+        userEmail: auth.currentUser?.email || "guest",
+        seats: seatNumbers,
         adultTickets: adultCount,
         childTickets: childCount,
-        seats: seatNumbers,
-        totalPaid: total,
-        createdAt: serverTimestamp()
+        totalPaid: total
       });
 
-      selectedSeats.forEach(seat => {
-        seat.classList.remove("selected-adult", "selected-child");
-        seat.classList.add("occupied");
+      document.querySelectorAll(".seat").forEach(seat => {
+        if (seatNumbers.includes(Number(seat.dataset.number))) {
+          seat.classList.remove("selected-adult", "selected-child");
+          seat.classList.add("occupied");
+        }
       });
 
       detailsText.innerHTML = `
-        Adult tickets: ${adultCount}<br>
-        Child tickets: ${childCount}<br>
         Seats: ${seatNumbers.join(", ")}<br>
-        <strong>Total paid: $${total}</strong>
+        Total: $${total}
       `;
 
       selectedSeats = [];
@@ -141,7 +108,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       modal.style.display = "flex";
 
     } catch (error) {
-      alert("Error saving ticket: " + error.message);
+      alert(error.message);
     }
   };
 
