@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Poppins', sans-serif; }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-blue-100 to-blue-300 min-h-screen">
+
+<!-- NAV -->
+<nav class="flex justify-between items-center p-6 text-blue-900">
+  <h1 class="text-2xl font-bold">🎭 Teatro Don Bosco</h1>
+
+  <button onclick="logout()" 
+    class="bg-red-400 text-white px-4 py-2 rounded-lg hover:bg-red-500">
+    Cerrar sesión
+  </button>
+</nav>
+
+<!-- CONTENIDO -->
+<div class="flex flex-col items-center justify-center mt-24 text-center">
+
+  <h1 class="text-5xl font-bold text-blue-900 mb-6">
+    Reserve Your Seats 🎟️
+  </h1>
+
+  <p class="text-lg text-blue-800 mb-10">
+    Elige tus asientos para disfrutar la función
+  </p>
+
+  <a href="seats.html"
+    class="bg-white px-10 py-4 rounded-2xl shadow-lg hover:scale-105 transition text-lg">
+    Elegir asientos
+  </a>
+
+</div>
+
+<script>
+
+// 🔐 PROTEGER LA PÁGINA
+const user = JSON.parse(localStorage.getItem("user"));
+
+if (!user) {
+  window.location.href = "index.html";
+}
+
+// 🚪 CERRAR SESIÓN
+function logout() {
+  localStorage.removeItem("user");
+  window.location.href = "index.html";
+}
+
+</script>
+
+</body>
+</html>
