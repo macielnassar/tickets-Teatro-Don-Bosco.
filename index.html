@@ -8,19 +8,27 @@
   </style>
 </head>
 
-<body class="bg-gradient-to-r from-pink-500 to-purple-600 min-h-screen flex items-center justify-center">
+<body class="bg-gradient-to-r from-blue-200 to-blue-400 min-h-screen flex items-center justify-center">
 
-<div class="bg-white p-8 rounded-2xl shadow-xl w-96">
+<!-- CONTENEDOR -->
+<div class="bg-white p-10 rounded-2xl shadow-2xl w-96">
 
-  <!-- LOGO / TITULO -->
+  <!-- TITULO -->
   <div class="text-center mb-6">
-    <h1 class="text-2xl font-bold text-gray-700">🎭 Teatro Don Bosco</h1>
+    <h1 class="text-2xl font-bold text-blue-900">🎭 Teatro Don Bosco</h1>
   </div>
 
   <!-- BOTONES CAMBIO -->
-  <div class="flex justify-center mb-6">
-    <button onclick="showLogin()" class="px-4 py-2 bg-blue-500 text-white rounded-l-lg">Iniciar sesión</button>
-    <button onclick="showRegister()" class="px-4 py-2 bg-gray-300 rounded-r-lg">Crear cuenta</button>
+  <div class="flex mb-6">
+    <button onclick="showLogin()" id="btnLogin"
+      class="w-1/2 py-2 bg-blue-500 text-white rounded-l-lg">
+      Iniciar sesión
+    </button>
+
+    <button onclick="showRegister()" id="btnRegister"
+      class="w-1/2 py-2 bg-gray-300 rounded-r-lg">
+      Crear cuenta
+    </button>
   </div>
 
   <!-- LOGIN -->
@@ -51,23 +59,32 @@
     </button>
   </div>
 
+  <!-- ERROR -->
   <p id="error" class="text-red-500 text-sm mt-3 text-center hidden">
-    Completa todos los campos
+    Datos incorrectos o incompletos
   </p>
 
 </div>
 
 <script>
 
-// Cambiar vistas
+// CAMBIO DE FORMULARIOS
 function showLogin() {
   document.getElementById("loginForm").classList.remove("hidden");
   document.getElementById("registerForm").classList.add("hidden");
+
+  document.getElementById("btnLogin").classList.add("bg-blue-500","text-white");
+  document.getElementById("btnRegister").classList.remove("bg-blue-500","text-white");
+  document.getElementById("btnRegister").classList.add("bg-gray-300");
 }
 
 function showRegister() {
   document.getElementById("registerForm").classList.remove("hidden");
   document.getElementById("loginForm").classList.add("hidden");
+
+  document.getElementById("btnRegister").classList.add("bg-blue-500","text-white");
+  document.getElementById("btnLogin").classList.remove("bg-blue-500","text-white");
+  document.getElementById("btnLogin").classList.add("bg-gray-300");
 }
 
 // REGISTRO
@@ -81,10 +98,9 @@ function register() {
     return;
   }
 
-  const user = { email, password };
-  localStorage.setItem("registeredUser", JSON.stringify(user));
+  localStorage.setItem("registeredUser", JSON.stringify({ email, password }));
 
-  alert("Cuenta creada, ahora inicia sesión");
+  alert("Cuenta creada correctamente");
   showLogin();
 }
 
@@ -104,7 +120,7 @@ function login() {
   if (email === savedUser.email && password === savedUser.password) {
     localStorage.setItem("user", JSON.stringify({ email }));
 
-    // IR A PÁGINA PRINCIPAL (no a seats aún)
+    // 👉 AQUÍ VA LA SIGUIENTE PÁGINA
     window.location.href = "home.html";
   } else {
     error.classList.remove("hidden");
