@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Select Your Seats</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <title>Seat Selection</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
     body {
       margin: 0;
-      font-family: "Segoe UI", sans-serif;
+      font-family: Arial, Helvetica, sans-serif;
       background: #f4f7fb;
       color: #1f2d3d;
     }
@@ -26,22 +26,11 @@
       padding: 30px;
     }
 
-    h2 {
-      text-align: center;
-      margin-bottom: 10px;
-    }
-
     .legend {
       display: flex;
       justify-content: center;
-      gap: 20px;
+      gap: 25px;
       margin-bottom: 20px;
-    }
-
-    .legend span {
-      display: flex;
-      align-items: center;
-      gap: 6px;
       font-size: 14px;
     }
 
@@ -50,12 +39,21 @@
       height: 34px;
       border-radius: 8px;
       cursor: pointer;
+      background: #d9e6f2;
     }
 
-    .adult { background: #0b3c5d; }
-    .child { background: #6baed6; }
-    .selected { outline: 3px solid #f7c948; }
-    .occupied { background: #bbb; cursor: not-allowed; }
+    .selected-adult {
+      background: #0b3c5d;
+    }
+
+    .selected-child {
+      background: #6baed6;
+    }
+
+    .occupied {
+      background: #aaa;
+      cursor: not-allowed;
+    }
 
     .screen {
       background: #ccc;
@@ -74,24 +72,45 @@
       margin-bottom: 30px;
     }
 
+    .controls {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .controls button {
+      margin: 0 10px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .adult-btn {
+      background: #0b3c5d;
+      color: white;
+    }
+
+    .child-btn {
+      background: #6baed6;
+      color: white;
+    }
+
     .summary {
       text-align: center;
       font-size: 16px;
     }
 
-    button {
+    #confirm {
+      display: block;
+      margin: 25px auto;
+      padding: 12px 30px;
       background: #0b3c5d;
       color: white;
       border: none;
-      padding: 12px 25px;
       border-radius: 8px;
-      cursor: pointer;
       font-size: 16px;
-      margin-top: 20px;
-    }
-
-    button:hover {
-      background: #094063;
+      cursor: pointer;
     }
 
     #confirmationModal {
@@ -101,6 +120,7 @@
       background: rgba(0,0,0,0.6);
       justify-content: center;
       align-items: center;
+      z-index: 999;
     }
 
     #confirmationModal div {
@@ -117,15 +137,20 @@
 
 <header>
   <h1>Seat Selection</h1>
-  <p>Select your seats and confirm your purchase</p>
+  <p>Select your seats and ticket type</p>
 </header>
 
 <main>
 
   <div class="legend">
-    <span><div class="seat adult"></div> Adult — $10</span>
-    <span><div class="seat child"></div> Child — $6</span>
-    <span><div class="seat occupied"></div> Occupied</span>
+    <span>Adult — $10</span>
+    <span>Child — $6</span>
+    <span>Gray = Occupied</span>
+  </div>
+
+  <div class="controls">
+    <button class="adult-btn" id="adultMode">Adult Ticket</button>
+    <button class="child-btn" id="childMode">Child Ticket</button>
   </div>
 
   <div class="screen">STAGE</div>
@@ -137,13 +162,10 @@
     Total: $0
   </div>
 
-  <div style="text-align:center">
-    <button id="confirm">Confirm Selection</button>
-  </div>
+  <button id="confirm">Confirm Selection</button>
 
 </main>
 
-<!-- CONFIRMATION MODAL -->
 <div id="confirmationModal">
   <div>
     <h2>Purchase Successful 🎉</h2>
@@ -154,3 +176,6 @@
 </div>
 
 <script src="js/seats.js"></script>
+
+</body>
+</html>
