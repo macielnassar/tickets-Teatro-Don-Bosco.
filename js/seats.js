@@ -1,4 +1,4 @@
-import { db, auth } from "./firebase.js";
+import { db } from "./firebase.js";
 import {
   collection,
   addDoc
@@ -22,21 +22,24 @@ document.addEventListener("DOMContentLoaded", () => {
     child: 6
   };
 
-  adultBtn.onclick = () => currentType = "adult";
-  childBtn.onclick = () => currentType = "child";
+  adultBtn.onclick = () => {
+    currentType = "adult";
+  };
 
-  // CREAR ASIENTOS VISIBLES
+  childBtn.onclick = () => {
+    currentType = "child";
+  };
+
+  // CREAR ASIENTOS
   for (let i = 1; i <= 60; i++) {
     const seat = document.createElement("div");
-    seat.classList.add("seat");
+    seat.className = "seat";
     seat.dataset.number = i;
 
     seat.onclick = () => {
-      if (seat.classList.contains("occupied")) return;
+      const found = selectedSeats.find(s => s.number == i);
 
-      const alreadySelected = selectedSeats.find(s => s.number == i);
-
-      if (alreadySelected) {
+      if (found) {
         selectedSeats = selectedSeats.filter(s => s.number != i);
         seat.classList.remove("selected-adult", "selected-child");
       } else {
@@ -77,17 +80,12 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const adultCount = selectedSeats.filter(s => s.type === "adult").length;
-    const childCount = selectedSeats.filter(s => s.type === "child").length;
-    const total = adultCount * 10 + childCount * 6;
     const seatNumbers = selectedSeats.map(s => s.number);
+    const total = selectedSeats.reduce((sum, s) => sum + prices[s.type], 0);
 
     try {
       await addDoc(collection(db, "tickets"), {
-        userEmail: auth.currentUser?.email || "guest",
         seats: seatNumbers,
-        adultTickets: adultCount,
-        childTickets: childCount,
         totalPaid: total
       });
 
@@ -100,7 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       detailsText.innerHTML = `
         Seats: ${seatNumbers.join(", ")}<br>
-        Total: $${total}
+        Total Paid: $${total}
       `;
 
       selectedSeats = [];
