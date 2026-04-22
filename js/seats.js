@@ -1,6 +1,3 @@
-// ===============================
-// ELEMENTOS DEL DOM
-// ===============================
 const buyBtn = document.getElementById("buyBtn");
 const typeSection = document.getElementById("typeSection");
 const seatSection = document.getElementById("seatSection");
@@ -8,87 +5,69 @@ const seatMap = document.getElementById("seatMap");
 
 const adultCountEl = document.getElementById("adultCount");
 const childCountEl = document.getElementById("childCount");
+const totalPriceEl = document.getElementById("totalPrice");
 
-// ===============================
-// ESTADO
-// ===============================
+const ADULT_PRICE = 10;
+const CHILD_PRICE = 6;
+
 let adultCount = 0;
 let childCount = 0;
 
-// Número total de asientos
-const totalSeats = 40;
+const totalSeats = 50;
+const occupiedSeats = [3, 7, 14, 22, 31];
 
-// Asientos ocupados (ejemplo)
-const occupiedSeats = [5, 12, 19, 26];
-
-// ===============================
-// PASO 1 → BUY TICKETS
-// ===============================
 buyBtn.addEventListener("click", () => {
-  // Muestra el paso 2 y 3
   typeSection.classList.remove("hidden");
   seatSection.classList.remove("hidden");
 });
 
-// ===============================
-// ACTUALIZAR CONTADORES
-// ===============================
-function updateCounters() {
+function updateSummary() {
   adultCountEl.textContent = adultCount;
   childCountEl.textContent = childCount;
+  totalPriceEl.textContent =
+    adultCount * ADULT_PRICE + childCount * CHILD_PRICE;
 }
 
-// ===============================
-// PASO 3 → CREAR MAPA DE ASIENTOS
-// ===============================
 function createSeatMap() {
-  seatMap.innerHTML = "";
-
   for (let i = 1; i <= totalSeats; i++) {
     const seat = document.createElement("div");
     seat.classList.add("seat");
-    seat.dataset.seatNumber = i;
+    seat.textContent = i;
 
-    // Si el asiento está ocupado
     if (occupiedSeats.includes(i)) {
       seat.classList.add("occupied");
     } else {
-      seat.addEventListener("click", () => handleSeatClick(seat));
+      seat.addEventListener("click", () => toggleSeat(seat));
     }
 
     seatMap.appendChild(seat);
   }
 }
 
-// ===============================
-// LÓGICA DE SELECCIÓN
-// ===============================
-function handleSeatClick(seat) {
-  // Si ya estaba seleccionado → deseleccionar
+function toggleSeat(seat) {
+  if (seat.classList.contains("occupied")) return;
+
   if (seat.classList.contains("selected")) {
     if (seat.dataset.type === "adult") adultCount--;
     if (seat.dataset.type === "child") childCount--;
-
     seat.classList.remove("selected", "adult", "child");
+    seat.textContent = seat.dataset.number;
     seat.dataset.type = "";
   } else {
-    // Tipo seleccionado en el paso 2
     const selectedType = document.querySelector(
       'input[name="seatType"]:checked'
     ).value;
 
     seat.classList.add("selected", selectedType);
     seat.dataset.type = selectedType;
+    seat.textContent = selectedType === "adult" ? "A" : "C";
 
     if (selectedType === "adult") adultCount++;
     if (selectedType === "child") childCount++;
   }
 
-  updateCounters();
+  updateSummary();
 }
 
-// ===============================
-// INICIALIZAR
-// ===============================
 createSeatMap();
-updateCounters();
+updateSummary();
