@@ -9,12 +9,12 @@
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
-      background: #f4f7fb;
-      color: #1f2d3d;
+      background: #f2f5f9;
+      color: #1e293b;
     }
 
     header {
-      background: #0b3c5d;
+      background: #0f172a;
       color: white;
       padding: 20px;
       text-align: center;
@@ -26,22 +26,59 @@
       padding: 30px;
     }
 
-    .legend {
-      display: flex;
-      justify-content: center;
-      gap: 25px;
-      margin-bottom: 20px;
-      font-size: 14px;
+    /* SCREEN */
+    .screen {
+      background: #cbd5e1;
+      padding: 10px;
+      text-align: center;
+      font-weight: bold;
+      border-radius: 6px;
+      margin-bottom: 25px;
+    }
+
+    /* CONTROLS */
+    .controls {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .controls button {
+      padding: 10px 22px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+      margin: 0 8px;
+    }
+
+    .adult-btn {
+      background: #0f172a;
+      color: white;
+    }
+
+    .child-btn {
+      background: #60a5fa;
+      color: white;
+    }
+
+    /* SEATS GRID */
+    .seats {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 14px;
+      justify-items: center;
+      margin-bottom: 30px;
     }
 
     /* SEAT SHAPE */
     .seat {
-      width: 32px;
+      width: 34px;
       height: 26px;
       background: #000;
       border-radius: 6px 6px 4px 4px;
-      position: relative;
       cursor: pointer;
+      position: relative;
+      transition: transform 0.1s ease;
     }
 
     .seat::before {
@@ -49,121 +86,78 @@
       position: absolute;
       top: -10px;
       left: 3px;
-      width: 26px;
+      width: 28px;
       height: 10px;
       background: #000;
       border-radius: 6px 6px 0 0;
     }
 
-    .selected-adult {
-      background: #0b3c5d;
+    .seat:hover {
+      transform: scale(1.1);
     }
 
-    .selected-adult::before {
-      background: #0b3c5d;
+    /* SELECTED STATES */
+    .adult {
+      background: #0f172a;
     }
 
-    .selected-child {
-      background: #6baed6;
+    .adult::before {
+      background: #0f172a;
     }
 
-    .selected-child::before {
-      background: #6baed6;
+    .child {
+      background: #60a5fa;
     }
 
-    .occupied {
-      background: #555;
-      cursor: not-allowed;
+    .child::before {
+      background: #60a5fa;
     }
 
-    .occupied::before {
-      background: #555;
-    }
-
-    .screen {
-      background: #ccc;
-      padding: 8px;
-      text-align: center;
-      margin-bottom: 20px;
-      border-radius: 4px;
-      font-weight: bold;
-    }
-
-    .seats {
-      display: grid;
-      grid-template-columns: repeat(10, 1fr);
-      gap: 12px;
-      justify-items: center;
-      margin-bottom: 30px;
-    }
-
-    .controls {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .controls button {
-      margin: 0 10px;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 15px;
-    }
-
-    .adult-btn {
-      background: #0b3c5d;
-      color: white;
-    }
-
-    .child-btn {
-      background: #6baed6;
-      color: white;
-    }
-
+    /* SUMMARY */
     .summary {
       text-align: center;
       font-size: 16px;
+      margin-bottom: 20px;
     }
 
     #confirm {
       display: block;
-      margin: 25px auto;
-      padding: 12px 30px;
-      background: #0b3c5d;
+      margin: auto;
+      padding: 14px 34px;
+      background: #0f172a;
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 16px;
       cursor: pointer;
     }
 
     /* MODAL */
-    #confirmationModal {
+    #modal {
       display: none;
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.6);
       justify-content: center;
       align-items: center;
-      z-index: 999;
+      z-index: 1000;
     }
 
-    #confirmationModal .modal-content {
+    .modal-box {
       background: white;
       padding: 30px;
-      border-radius: 12px;
-      width: 320px;
+      border-radius: 14px;
       text-align: center;
+      width: 320px;
     }
 
-    #closeModal {
+    .modal-box button {
       margin-top: 20px;
-      padding: 10px 25px;
-      background: #0b3c5d;
-      color: white;
+      padding: 10px 26px;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
+      background: #0f172a;
+      color: white;
       cursor: pointer;
     }
   </style>
@@ -172,21 +166,15 @@
 <body>
 
 <header>
-  <h1>Seat Selection</h1>
-  <p>Select your seats and ticket type</p>
+  <h1>Choose Your Seats</h1>
+  <p>Select any seat and choose ticket type</p>
 </header>
 
 <main>
 
-  <div class="legend">
-    <span>Adult — $10</span>
-    <span>Child — $6</span>
-    <span>Gray = Occupied</span>
-  </div>
-
   <div class="controls">
-    <button class="adult-btn" id="adultMode">Adult Ticket</button>
-    <button class="child-btn" id="childMode">Child Ticket</button>
+    <button class="adult-btn" id="adultBtn">Adult Ticket ($10)</button>
+    <button class="child-btn" id="childBtn">Child Ticket ($6)</button>
   </div>
 
   <div class="screen">STAGE</div>
@@ -194,19 +182,19 @@
   <div class="seats" id="seats"></div>
 
   <div class="summary" id="summary">
-    Selected seats: 0<br>
+    Selected seats: 0 <br>
     Total: $0
   </div>
 
-  <button id="confirm">Confirm Selection</button>
+  <button id="confirm">Confirm Purchase</button>
 
 </main>
 
 <!-- CONFIRMATION MODAL -->
-<div id="confirmationModal">
-  <div class="modal-content">
+<div id="modal">
+  <div class="modal-box">
     <h2>Purchase Successful 🎉</h2>
-    <p>Your seats have been successfully reserved.</p>
+    <p>Your seats have been reserved.</p>
     <button id="closeModal">Close</button>
   </div>
 </div>
@@ -215,11 +203,11 @@
   const seatsContainer = document.getElementById("seats");
   const summary = document.getElementById("summary");
   const confirmBtn = document.getElementById("confirm");
-  const modal = document.getElementById("confirmationModal");
+  const modal = document.getElementById("modal");
   const closeModal = document.getElementById("closeModal");
 
-  const adultBtn = document.getElementById("adultMode");
-  const childBtn = document.getElementById("childMode");
+  const adultBtn = document.getElementById("adultBtn");
+  const childBtn = document.getElementById("childBtn");
 
   let currentType = "adult";
   let selectedSeats = [];
@@ -232,30 +220,21 @@
   adultBtn.onclick = () => currentType = "adult";
   childBtn.onclick = () => currentType = "child";
 
-  // CREATE SEATS
+  // CREATE FREE SEATS
   for (let i = 1; i <= 60; i++) {
     const seat = document.createElement("div");
     seat.classList.add("seat");
     seat.dataset.id = i;
 
-    // Random occupied seats
-    if (Math.random() < 0.15) {
-      seat.classList.add("occupied");
-    }
-
     seat.onclick = () => {
-      if (seat.classList.contains("occupied")) return;
+      const existing = selectedSeats.find(s => s.id === i);
 
-      const index = selectedSeats.findIndex(s => s.id === i);
-
-      if (index >= 0) {
-        selectedSeats.splice(index, 1);
-        seat.classList.remove("selected-adult", "selected-child");
+      if (existing) {
+        selectedSeats = selectedSeats.filter(s => s.id !== i);
+        seat.classList.remove("adult", "child");
       } else {
         selectedSeats.push({ id: i, type: currentType });
-        seat.classList.add(
-          currentType === "adult" ? "selected-adult" : "selected-child"
-        );
+        seat.classList.add(currentType);
       }
 
       updateSummary();
