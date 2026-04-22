@@ -1,28 +1,267 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
-<style>
-body { font-family: 'Poppins', sans-serif; }
-</style>
+  <meta charset="UTF-8">
+  <title>Seat Selection</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f2f5f9;
+      color: #1e293b;
+    }
+
+    header {
+      background: #0f172a;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    main {
+      max-width: 900px;
+      margin: auto;
+      padding: 30px;
+    }
+
+    /* SCREEN */
+    .screen {
+      background: #cbd5e1;
+      padding: 10px;
+      text-align: center;
+      font-weight: bold;
+      border-radius: 6px;
+      margin-bottom: 25px;
+    }
+
+    /* CONTROLS */
+    .controls {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .controls button {
+      padding: 10px 22px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+      margin: 0 8px;
+    }
+
+    .adult-btn {
+      background: #0f172a;
+      color: white;
+    }
+
+    .child-btn {
+      background: #60a5fa;
+      color: white;
+    }
+
+    /* SEATS GRID */
+    .seats {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 14px;
+      justify-items: center;
+      margin-bottom: 30px;
+    }
+
+    /* SEAT SHAPE */
+    .seat {
+      width: 34px;
+      height: 26px;
+      background: #000;
+      border-radius: 6px 6px 4px 4px;
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.1s ease;
+    }
+
+    .seat::before {
+      content: "";
+      position: absolute;
+      top: -10px;
+      left: 3px;
+      width: 28px;
+      height: 10px;
+      background: #000;
+      border-radius: 6px 6px 0 0;
+    }
+
+    .seat:hover {
+      transform: scale(1.1);
+    }
+
+    /* SELECTED STATES */
+    .adult {
+      background: #0f172a;
+    }
+
+    .adult::before {
+      background: #0f172a;
+    }
+
+    .child {
+      background: #60a5fa;
+    }
+
+    .child::before {
+      background: #60a5fa;
+    }
+
+    /* SUMMARY */
+    .summary {
+      text-align: center;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    #confirm {
+      display: block;
+      margin: auto;
+      padding: 14px 34px;
+      background: #0f172a;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    /* MODAL */
+    #modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-box {
+      background: white;
+      padding: 30px;
+      border-radius: 14px;
+      text-align: center;
+      width: 320px;
+    }
+
+    .modal-box button {
+      margin-top: 20px;
+      padding: 10px 26px;
+      border: none;
+      border-radius: 8px;
+      background: #0f172a;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
 </head>
 
-<body class="bg-gradient-to-br from-blue-100 to-blue-300 min-h-screen">
+<body>
 
-<nav class="flex justify-between p-6 text-blue-900">
-  <h1 class="text-2xl font-bold">🎭 Teatro Don Bosco</h1>
-  <a href="dashboard.html">Dashboard</a>
-</nav>
+<header>
+  <h1>Choose Your Seats</h1>
+  <p>Select any seat and choose ticket type</p>
+</header>
 
-<div class="text-center mt-24">
-  <h1 class="text-5xl font-bold text-blue-900 mb-6">
-    Reserve Your Seats 🎟️
-  </h1>
+<main>
 
-  <a href="seats.html" class="bg-white px-8 py-4 rounded-2xl shadow-lg hover:scale-105 transition">
-    Choose your seat
-  </a>
+  <div class="controls">
+    <button class="adult-btn" id="adultBtn">Adult Ticket ($10)</button>
+    <button class="child-btn" id="childBtn">Child Ticket ($6)</button>
+  </div>
+
+  <div class="screen">STAGE</div>
+
+  <div class="seats" id="seats"></div>
+
+  <div class="summary" id="summary">
+    Selected seats: 0 <br>
+    Total: $0
+  </div>
+
+  <button id="confirm">Confirm Purchase</button>
+
+</main>
+
+<!-- CONFIRMATION MODAL -->
+<div id="modal">
+  <div class="modal-box">
+    <h2>Purchase Successful 🎉</h2>
+    <p>Your seats have been reserved.</p>
+    <button id="closeModal">Close</button>
+  </div>
 </div>
 
+<script>
+  const seatsContainer = document.getElementById("seats");
+  const summary = document.getElementById("summary");
+  const confirmBtn = document.getElementById("confirm");
+  const modal = document.getElementById("modal");
+  const closeModal = document.getElementById("closeModal");
+
+  const adultBtn = document.getElementById("adultBtn");
+  const childBtn = document.getElementById("childBtn");
+
+  let currentType = "adult";
+  let selectedSeats = [];
+
+  const prices = {
+    adult: 10,
+    child: 6
+  };
+
+  adultBtn.onclick = () => currentType = "adult";
+  childBtn.onclick = () => currentType = "child";
+
+  // CREATE FREE SEATS
+  for (let i = 1; i <= 60; i++) {
+    const seat = document.createElement("div");
+    seat.classList.add("seat");
+    seat.dataset.id = i;
+
+    seat.onclick = () => {
+      const existing = selectedSeats.find(s => s.id === i);
+
+      if (existing) {
+        selectedSeats = selectedSeats.filter(s => s.id !== i);
+        seat.classList.remove("adult", "child");
+      } else {
+        selectedSeats.push({ id: i, type: currentType });
+        seat.classList.add(currentType);
+      }
+
+      updateSummary();
+    };
+
+    seatsContainer.appendChild(seat);
+  }
+
+  function updateSummary() {
+    let total = 0;
+    selectedSeats.forEach(s => total += prices[s.type]);
+
+    summary.innerHTML = `
+      Selected seats: ${selectedSeats.length}<br>
+      Total: $${total}
+    `;
+  }
+
+  confirmBtn.onclick = () => {
+    if (selectedSeats.length === 0) return;
+    modal.style.display = "flex";
+  };
+
+  closeModal.onclick = () => {
+    modal.style.display = "none";
+  };
+</script>
+
 </body>
+</html>
