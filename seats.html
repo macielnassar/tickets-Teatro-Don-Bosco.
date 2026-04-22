@@ -1,232 +1,170 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Seat Selection</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Seat Selection</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: #f2f5f9;
-      color: #1e293b;
-    }
+<style>
+body { margin:0; font-family:Arial; background:#f2f5f9; color:#1e293b; }
+header { background:#0f172a; color:white; padding:20px; text-align:center; }
+main { max-width:900px; margin:auto; padding:30px; }
+.screen { background:#cbd5e1; padding:10px; text-align:center; border-radius:6px; margin-bottom:25px; }
 
-    header {
-      background: #0f172a;
-      color: white;
-      padding: 20px;
-      text-align: center;
-    }
+.controls { text-align:center; margin-bottom:25px; }
+.controls button { padding:10px 22px; border:none; border-radius:8px; margin:0 8px; cursor:pointer; }
+.adult-btn { background:#0f172a; color:white; }
+.child-btn { background:#60a5fa; color:white; }
 
-    main {
-      max-width: 900px;
-      margin: auto;
-      padding: 30px;
-    }
+.seats { display:grid; grid-template-columns:repeat(10,1fr); gap:14px; justify-items:center; margin-bottom:30px; }
 
-    /* SCREEN */
-    .screen {
-      background: #cbd5e1;
-      padding: 10px;
-      text-align: center;
-      font-weight: bold;
-      border-radius: 6px;
-      margin-bottom: 25px;
-    }
+.seat {
+  width:34px; height:26px; background:#000; border-radius:6px 6px 4px 4px;
+  cursor:pointer; position:relative;
+}
+.seat::before {
+  content:""; position:absolute; top:-10px; left:3px;
+  width:28px; height:10px; background:#000; border-radius:6px 6px 0 0;
+}
 
-    /* CONTROLS */
-    .controls {
-      text-align: center;
-      margin-bottom: 25px;
-    }
+/* estados */
+.adult { background:#0f172a; }
+.adult::before { background:#0f172a; }
 
-    .controls button {
-      padding: 10px 22px;
-      border: none;
-      border-radius: 8px;
-      font-size: 15px;
-      cursor: pointer;
-      margin: 0 8px;
-    }
+.child { background:#60a5fa; }
+.child::before { background:#60a5fa; }
 
-    .adult-btn {
-      background: #0f172a;
-      color: white;
-    }
+.occupied {
+  background:red !important;
+  cursor:not-allowed;
+}
+.occupied::before { background:red !important; }
 
-    .child-btn {
-      background: #60a5fa;
-      color: white;
-    }
+.summary { text-align:center; margin-bottom:20px; }
 
-    /* SEATS GRID */
-    .seats {
-      display: grid;
-      grid-template-columns: repeat(10, 1fr);
-      gap: 14px;
-      justify-items: center;
-      margin-bottom: 30px;
-    }
+#confirm {
+  display:block; margin:auto; padding:14px 34px;
+  background:#0f172a; color:white; border:none;
+  border-radius:10px; cursor:pointer;
+}
 
-    /* SEAT SHAPE */
-    .seat {
-      width: 34px;
-      height: 26px;
-      background: #000;
-      border-radius: 6px 6px 4px 4px;
-      cursor: pointer;
-      position: relative;
-      transition: transform 0.1s ease;
-    }
+#modal {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.6);
+  justify-content:center; align-items:center;
+}
 
-    .seat::before {
-      content: "";
-      position: absolute;
-      top: -10px;
-      left: 3px;
-      width: 28px;
-      height: 10px;
-      background: #000;
-      border-radius: 6px 6px 0 0;
-    }
-
-    .seat:hover {
-      transform: scale(1.1);
-    }
-
-    /* SELECTED STATES */
-    .adult {
-      background: #0f172a;
-    }
-
-    .adult::before {
-      background: #0f172a;
-    }
-
-    .child {
-      background: #60a5fa;
-    }
-
-    .child::before {
-      background: #60a5fa;
-    }
-
-    /* SUMMARY */
-    .summary {
-      text-align: center;
-      font-size: 16px;
-      margin-bottom: 20px;
-    }
-
-    #confirm {
-      display: block;
-      margin: auto;
-      padding: 14px 34px;
-      background: #0f172a;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    /* MODAL */
-    #modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-
-    .modal-box {
-      background: white;
-      padding: 30px;
-      border-radius: 14px;
-      text-align: center;
-      width: 320px;
-    }
-
-    .modal-box button {
-      margin-top: 20px;
-      padding: 10px 26px;
-      border: none;
-      border-radius: 8px;
-      background: #0f172a;
-      color: white;
-      cursor: pointer;
-    }
-  </style>
+.modal-box {
+  background:white; padding:30px;
+  border-radius:14px; text-align:center;
+}
+</style>
 </head>
 
 <body>
 
 <header>
   <h1>Choose Your Seats</h1>
-  <p>Select any seat and choose ticket type</p>
 </header>
 
 <main>
 
-  <div class="controls">
-    <button class="adult-btn" id="adultBtn">Adult Ticket ($10)</button>
-    <button class="child-btn" id="childBtn">Child Ticket ($6)</button>
-  </div>
+<div class="controls">
+  <button class="adult-btn" id="adultBtn">Adult ($10)</button>
+  <button class="child-btn" id="childBtn">Child ($6)</button>
+</div>
 
-  <div class="screen">STAGE</div>
+<div class="screen">STAGE</div>
 
-  <div class="seats" id="seats"></div>
+<div class="seats" id="seats"></div>
 
-  <div class="summary" id="summary">
-    Selected seats: 0 <br>
-    Total: $0
-  </div>
+<div class="summary" id="summary"></div>
 
-  <button id="confirm">Confirm Purchase</button>
+<button id="confirm">Confirm</button>
 
 </main>
 
-<!-- CONFIRMATION MODAL -->
 <div id="modal">
   <div class="modal-box">
     <h2>Purchase Successful 🎉</h2>
-    <p>Your seats have been reserved.</p>
-    <button id="closeModal">Close</button>
+    <button onclick="location.reload()">OK</button>
   </div>
 </div>
 
-<script>
-  const seatsContainer = document.getElementById("seats");
-  const summary = document.getElementById("summary");
-  const confirmBtn = document.getElementById("confirm");
-  const modal = document.getElementById("modal");
-  const closeModal = document.getElementById("closeModal");
+<!-- 🔥 FIREBASE + FIRESTORE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { 
+  getAuth, onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-  const adultBtn = document.getElementById("adultBtn");
-  const childBtn = document.getElementById("childBtn");
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  let currentType = "adult";
-  let selectedSeats = [];
+const firebaseConfig = {
+  apiKey: "AIzaSyDJclflFy2DKoMM-7_yh0j-emyPa4RkALw",
+  authDomain: "ticketsdonb.firebaseapp.com",
+  projectId: "ticketsdonb",
+  appId: "1:273721684602:web:993dd518cfee19056c01c3"
+};
 
-  const prices = {
-    adult: 10,
-    child: 6
-  };
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-  adultBtn.onclick = () => currentType = "adult";
-  childBtn.onclick = () => currentType = "child";
+const seatsContainer = document.getElementById("seats");
+const summary = document.getElementById("summary");
+const confirmBtn = document.getElementById("confirm");
 
-  // CREATE FREE SEATS
+let currentType = "adult";
+let selectedSeats = [];
+let occupiedSeats = [];
+
+const prices = { adult: 10, child: 6 };
+
+document.getElementById("adultBtn").onclick = () => currentType = "adult";
+document.getElementById("childBtn").onclick = () => currentType = "child";
+
+// 🔒 PROTEGER (requiere login)
+let currentUser = null;
+
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "login.html";
+  } else {
+    currentUser = user;
+    loadSeats();
+  }
+});
+
+// 🔥 CARGAR ASIENTOS DESDE FIREBASE
+async function loadSeats() {
+  const querySnapshot = await getDocs(collection(db, "reservas"));
+  occupiedSeats = querySnapshot.docs.map(doc => doc.data().seat);
+
+  createSeats();
+}
+
+// 🎟️ CREAR ASIENTOS
+function createSeats() {
+  seatsContainer.innerHTML = "";
+
   for (let i = 1; i <= 60; i++) {
     const seat = document.createElement("div");
     seat.classList.add("seat");
     seat.dataset.id = i;
 
+    if (occupiedSeats.includes(i)) {
+      seat.classList.add("occupied");
+    }
+
     seat.onclick = () => {
+      if (seat.classList.contains("occupied")) return;
+
       const existing = selectedSeats.find(s => s.id === i);
 
       if (existing) {
@@ -242,25 +180,34 @@
 
     seatsContainer.appendChild(seat);
   }
+}
 
-  function updateSummary() {
-    let total = 0;
-    selectedSeats.forEach(s => total += prices[s.type]);
+// 💰 RESUMEN
+function updateSummary() {
+  let total = 0;
+  selectedSeats.forEach(s => total += prices[s.type]);
 
-    summary.innerHTML = `
-      Selected seats: ${selectedSeats.length}<br>
-      Total: $${total}
-    `;
+  summary.innerHTML = `
+    Seats: ${selectedSeats.length}<br>
+    Total: $${total}
+  `;
+}
+
+// 💾 GUARDAR EN FIREBASE
+confirmBtn.onclick = async () => {
+  if (selectedSeats.length === 0) return;
+
+  for (let s of selectedSeats) {
+    await addDoc(collection(db, "reservas"), {
+      seat: s.id,
+      type: s.type,
+      user: currentUser.email,
+      time: new Date()
+    });
   }
 
-  confirmBtn.onclick = () => {
-    if (selectedSeats.length === 0) return;
-    modal.style.display = "flex";
-  };
-
-  closeModal.onclick = () => {
-    modal.style.display = "none";
-  };
+  document.getElementById("modal").style.display = "flex";
+};
 </script>
 
 </body>
