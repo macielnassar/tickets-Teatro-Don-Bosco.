@@ -1,37 +1,50 @@
-const seatsContainer = document.getElementById("seats");
-const selectedText = document.getElementById("selectedText");
-const buyBtn = document.getElementById("buyBtn");
+import { db, auth } from "./firebase.js";
+import {
+  collection,
+  query,
+  where,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-let selectedSeats = [];
+const container = document.getElementById("tickets");
 
-for (let i = 1; i <= 25; i++) {
-  const seat = document.createElement("button");
-  seat.innerText = i;
+auth.onAuthStateChanged(async (user) => {
+  if (!user) {
+    container.innerHTML = `
+      <p class="text-center text-red-600">
+        Please log in first.
+      </p>
+    `;
+    return;
+  }
 
-  seat.className = "bg-white border border-blue-300 p-3 rounded-lg";
+  const q = query(
+    collection(db, "tickets"),
+    where("userEmail", "==", user.email)
+  );
 
-  seat.onclick = () => {
-    if (selectedSeats.includes(i)) {
-      selectedSeats = selectedSeats.filter(s => s !== i);
-      seat.className = "bg-white border border-blue-300 p-3 rounded-lg";
-    } else {
-      selectedSeats.push(i);
-      seat.className = "bg-blue-300 text-white p-3 rounded-lg";
-    }
+  const snapshot = await getDocs(q);
 
-    selectedText.innerText = "Seats: " + selectedSeats.join(", ");
-  };
+  if (snapshot.empty) {
+    container.innerHTML = `
+      <p class="text-center text-gray-600">
+        No tickets found.
+      </p>
+    `;
+    return;
+  }
 
-  seatsContainer.appendChild(seat);
-}
+  snapshot.forEach(doc => {
+    const data = doc.data();
 
-if (buyBtn) {
-  buyBtn.onclick = () => {
-    if (selectedSeats.length === 0) {
-      alert("Select seats first");
-      return;
-    }
-
-    alert("You bought seats: " + selectedSeats.join(", "));
-  };
-}
+    container.innerHTML += `
+      <div class="bg-white p-5 rounded-xl shadow">
+        <h2 class="text-xl font-bold mb-2">Ticket Reservation</h2>
+        <p><strong>Seats:</strong> ${data.seats.join(", ")}</p>
+        <p><strong>Adult:</strong> ${data.adultTickets}</p>
+        <p><strong>Child:</strong> ${data.childTickets}</p>
+        <p><strong>Total Paid:</strong> $${data.totalPaid}</p>
+      </div>
+    `;
+  });
+});
