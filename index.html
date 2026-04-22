@@ -8,29 +8,110 @@
   </style>
 </head>
 
-<body class="bg-gradient-to-br from-blue-100 to-blue-300 min-h-screen">
+<body class="bg-gradient-to-r from-pink-500 to-purple-600 min-h-screen flex items-center justify-center">
 
-<nav class="flex justify-between items-center p-6 text-blue-900">
-  <h1 class="text-2xl font-bold">🎭 Teatro Don Bosco</h1>
-</nav>
+<div class="bg-white p-8 rounded-2xl shadow-xl w-96">
 
-<div class="flex flex-col items-center justify-center mt-20">
+  <!-- LOGO / TITULO -->
+  <div class="text-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-700">🎭 Teatro Don Bosco</h1>
+  </div>
 
-  <h1 class="text-5xl font-bold text-blue-900 mb-8 text-center">
-    Reserve Your Seats 🎟️
-  </h1>
+  <!-- BOTONES CAMBIO -->
+  <div class="flex justify-center mb-6">
+    <button onclick="showLogin()" class="px-4 py-2 bg-blue-500 text-white rounded-l-lg">Iniciar sesión</button>
+    <button onclick="showRegister()" class="px-4 py-2 bg-gray-300 rounded-r-lg">Crear cuenta</button>
+  </div>
 
-  <!-- FORMULARIO LOGIN -->
-  <div class="bg-white p-8 rounded-2xl shadow-xl w-80">
+  <!-- LOGIN -->
+  <div id="loginForm">
+    <input id="loginEmail" type="email" placeholder="Correo"
+      class="w-full mb-3 p-3 border rounded-lg">
 
-    <h2 class="text-xl font-semibold mb-4 text-center">Iniciar sesión</h2>
+    <input id="loginPassword" type="password" placeholder="Contraseña"
+      class="w-full mb-4 p-3 border rounded-lg">
 
-    <input 
-      id="email"
-      type="email" 
-      placeholder="Correo"
-      class="w-full mb-3 p-3 rounded-lg border outline-none"
-    >
+    <button onclick="login()"
+      class="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600">
+      Iniciar sesión
+    </button>
+  </div>
 
-    <input 
-      id="password"
+  <!-- REGISTER -->
+  <div id="registerForm" class="hidden">
+    <input id="regEmail" type="email" placeholder="Correo"
+      class="w-full mb-3 p-3 border rounded-lg">
+
+    <input id="regPassword" type="password" placeholder="Contraseña"
+      class="w-full mb-4 p-3 border rounded-lg">
+
+    <button onclick="register()"
+      class="w-full bg-green-500 text-white py-3 rounded-lg hover:bg-green-600">
+      Crear cuenta
+    </button>
+  </div>
+
+  <p id="error" class="text-red-500 text-sm mt-3 text-center hidden">
+    Completa todos los campos
+  </p>
+
+</div>
+
+<script>
+
+// Cambiar vistas
+function showLogin() {
+  document.getElementById("loginForm").classList.remove("hidden");
+  document.getElementById("registerForm").classList.add("hidden");
+}
+
+function showRegister() {
+  document.getElementById("registerForm").classList.remove("hidden");
+  document.getElementById("loginForm").classList.add("hidden");
+}
+
+// REGISTRO
+function register() {
+  const email = document.getElementById("regEmail").value;
+  const password = document.getElementById("regPassword").value;
+  const error = document.getElementById("error");
+
+  if (!email || !password) {
+    error.classList.remove("hidden");
+    return;
+  }
+
+  const user = { email, password };
+  localStorage.setItem("registeredUser", JSON.stringify(user));
+
+  alert("Cuenta creada, ahora inicia sesión");
+  showLogin();
+}
+
+// LOGIN
+function login() {
+  const email = document.getElementById("loginEmail").value;
+  const password = document.getElementById("loginPassword").value;
+  const error = document.getElementById("error");
+
+  const savedUser = JSON.parse(localStorage.getItem("registeredUser"));
+
+  if (!email || !password || !savedUser) {
+    error.classList.remove("hidden");
+    return;
+  }
+
+  if (email === savedUser.email && password === savedUser.password) {
+    localStorage.setItem("user", JSON.stringify({ email }));
+
+    // IR A PÁGINA PRINCIPAL (no a seats aún)
+    window.location.href = "home.html";
+  } else {
+    error.classList.remove("hidden");
+  }
+}
+
+</script>
+
+</body>
+</html>
