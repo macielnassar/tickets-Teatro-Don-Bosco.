@@ -1,30 +1,152 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <title>Seat Reservation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    .seat {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .adult {
+      background-color: #93c5fd;
+    }
+    .child {
+      background-color: #fde68a;
+    }
+    .selected {
+      outline: 3px solid #1e3a8a;
+    }
+    .occupied {
+      background-color: #9ca3af;
+      cursor: not-allowed;
+    }
+  </style>
 </head>
 
-<body class="bg-blue-100">
+<body class="bg-gray-100 min-h-screen p-6">
 
-<h2 class="text-center text-2xl font-bold mt-6 text-blue-900">
-Cinema Room
-</h2>
+  <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-8">
+    <h1 class="text-3xl font-bold mb-6 text-center">Choose Your Seats</h1>
 
-<div class="text-center my-4">
-  <div class="bg-gray-300 w-64 mx-auto py-2 rounded">
-    SCREEN
+    <!-- STEP 1 -->
+    <div class="mb-6">
+      <label class="block font-semibold mb-2">Ticket Quantity</label>
+      <input
+        id="quantity"
+        type="number"
+        min="1"
+        max="10"
+        value="1"
+        class="border rounded-lg px-4 py-2 w-32"
+      />
+    </div>
+
+    <!-- BUY TICKETS BUTTON -->
+    <button
+      id="buyBtn"
+      class="bg-blue-500 text-white px-6 py-3 rounded-lg mb-6 hover:bg-blue-600"
+    >
+      Buy Tickets
+    </button>
+
+    <!-- STEP 2 (HIDDEN INITIALLY) -->
+    <div id="typeSection" class="hidden mb-8">
+      <h2 class="text-xl font-bold mb-4">Step 2: Choose Seat Type</h2>
+
+      <div class="flex gap-6">
+        <label class="flex items-center gap-2">
+          <input type="radio" name="seatType" value="adult" checked />
+          Adult Seat
+        </label>
+
+        <label class="flex items-center gap-2">
+          <input type="radio" name="seatType" value="child" />
+          Child Seat
+        </label>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div id="seatSection" class="hidden">
+      <h2 class="text-xl font-bold mb-4">Step 3: Select Seats</h2>
+
+      <div class="grid grid-cols-8 gap-3 mb-6" id="seatMap"></div>
+
+      <div class="text-sm text-gray-700 space-y-1">
+        <p>Adult seats selected: <span id="adultCount">0</span></p>
+        <p>Child seats selected: <span id="childCount">0</span></p>
+      </div>
+    </div>
   </div>
-</div>
 
-<div id="seats" class="grid gap-2 justify-center"></div>
+  <!-- SCRIPT -->
+  <script>
+    const buyBtn = document.getElementById("buyBtn");
+    const typeSection = document.getElementById("typeSection");
+    const seatSection = document.getElementById("seatSection");
+    const seatMap = document.getElementById("seatMap");
 
-<div class="text-center mt-6">
-  <button id="buyBtn" class="bg-blue-400 text-white px-6 py-3 rounded-xl">
-    Confirm Purchase
-  </button>
-</div>
+    const adultCountEl = document.getElementById("adultCount");
+    const childCountEl = document.getElementById("childCount");
 
-<script src="js/seats.js"></script>
+    let adultCount = 0;
+    let childCount = 0;
+
+    const totalSeats = 40;
+    const occupiedSeats = [5, 12, 19, 26]; // example occupied seats
+
+    buyBtn.addEventListener("click", () => {
+      typeSection.classList.remove("hidden");
+      seatSection.classList.remove("hidden");
+    });
+
+    function updateCounters() {
+      adultCountEl.textContent = adultCount;
+      childCountEl.textContent = childCount;
+    }
+
+    for (let i = 1; i <= totalSeats; i++) {
+      const seat = document.createElement("div");
+      seat.classList.add("seat");
+
+      if (occupiedSeats.includes(i)) {
+        seat.classList.add("occupied");
+      } else {
+        seat.addEventListener("click", () => {
+          if (seat.classList.contains("occupied")) return;
+
+          if (seat.classList.contains("selected")) {
+            if (seat.dataset.type === "adult") adultCount--;
+            if (seat.dataset.type === "child") childCount--;
+            seat.classList.remove("selected", "adult", "child");
+            seat.dataset.type = "";
+          } else {
+            const selectedType = document.querySelector(
+              'input[name="seatType"]:checked'
+            ).value;
+
+            seat.classList.add("selected", selectedType);
+            seat.dataset.type = selectedType;
+
+            if (selectedType === "adult") adultCount++;
+            if (selectedType === "child") childCount++;
+          }
+
+          updateCounters();
+        });
+      }
+
+      seatMap.appendChild(seat);
+    }
+  </script>
 
 </body>
 </html>
