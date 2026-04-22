@@ -9,59 +9,58 @@
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
-      background: #f2f5f9;
+      background: linear-gradient(to right, #f8fafc, #e2e8f0);
       color: #1e293b;
     }
 
     header {
       background: #0f172a;
       color: white;
-      padding: 20px;
+      padding: 25px;
       text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
 
     main {
-      max-width: 900px;
+      max-width: 950px;
       margin: auto;
       padding: 30px;
     }
 
-    /* SCREEN */
     .screen {
       background: #cbd5e1;
-      padding: 10px;
+      padding: 12px;
       text-align: center;
       font-weight: bold;
-      border-radius: 6px;
-      margin-bottom: 25px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      letter-spacing: 2px;
     }
 
-    /* CONTROLS */
     .controls {
       text-align: center;
-      margin-bottom: 25px;
+      margin-bottom: 30px;
     }
 
     .controls button {
-      padding: 10px 22px;
+      padding: 12px 24px;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 15px;
       cursor: pointer;
       margin: 0 8px;
     }
 
-    .adult-btn {
+    #adultMode {
       background: #0f172a;
       color: white;
     }
 
-    .child-btn {
-      background: #60a5fa;
+    #childMode {
+      background: #3b82f6;
       color: white;
     }
 
-    /* SEATS GRID */
     .seats {
       display: grid;
       grid-template-columns: repeat(10, 1fr);
@@ -70,111 +69,103 @@
       margin-bottom: 30px;
     }
 
-    /* SEAT SHAPE */
     .seat {
-      width: 34px;
-      height: 26px;
-      background: #000;
-      border-radius: 6px 6px 4px 4px;
+      width: 36px;
+      height: 28px;
+      background: #64748b;
+      border-radius: 8px 8px 4px 4px;
       cursor: pointer;
+      transition: 0.2s;
       position: relative;
-      transition: transform 0.1s ease;
     }
 
     .seat::before {
       content: "";
       position: absolute;
-      top: -10px;
-      left: 3px;
+      top: -8px;
+      left: 4px;
       width: 28px;
-      height: 10px;
-      background: #000;
+      height: 8px;
+      background: inherit;
       border-radius: 6px 6px 0 0;
     }
 
     .seat:hover {
-      transform: scale(1.1);
+      transform: scale(1.08);
     }
 
-    /* SELECTED STATES */
-    .adult {
+    .selected-adult {
       background: #0f172a;
     }
 
-    .adult::before {
-      background: #0f172a;
+    .selected-child {
+      background: #3b82f6;
     }
 
-    .child {
-      background: #60a5fa;
+    .occupied {
+      background: #ef4444;
+      cursor: not-allowed;
     }
 
-    .child::before {
-      background: #60a5fa;
-    }
-
-    /* SUMMARY */
     .summary {
       text-align: center;
-      font-size: 16px;
-      margin-bottom: 20px;
+      font-size: 18px;
+      margin-bottom: 25px;
+      font-weight: bold;
     }
 
     #confirm {
       display: block;
       margin: auto;
-      padding: 14px 34px;
+      padding: 14px 36px;
+      border: none;
+      border-radius: 12px;
       background: #0f172a;
       color: white;
-      border: none;
-      border-radius: 10px;
       font-size: 16px;
       cursor: pointer;
     }
 
-    /* MODAL */
-    #modal {
+    #confirmationModal {
       display: none;
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.6);
       justify-content: center;
       align-items: center;
-      z-index: 1000;
     }
 
     .modal-box {
       background: white;
       padding: 30px;
-      border-radius: 14px;
+      border-radius: 18px;
       text-align: center;
       width: 320px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     }
 
     .modal-box button {
       margin-top: 20px;
-      padding: 10px 26px;
+      padding: 10px 24px;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       background: #0f172a;
       color: white;
       cursor: pointer;
     }
   </style>
 </head>
-
 <body>
 
 <header>
   <h1>Choose Your Seats</h1>
-  <p>Select any seat and choose ticket type</p>
+  <p>Select your ticket type and reserve your seat</p>
 </header>
 
 <main>
-
   <div class="controls">
-    <button class="adult-btn" id="adultBtn">Adult Ticket ($10)</button>
-    <button class="child-btn" id="childBtn">Child Ticket ($6)</button>
+    <button id="adultMode">Adult Ticket ($10)</button>
+    <button id="childMode">Child Ticket ($6)</button>
   </div>
 
   <div class="screen">STAGE</div>
@@ -187,81 +178,17 @@
   </div>
 
   <button id="confirm">Confirm Purchase</button>
-
 </main>
 
-<!-- CONFIRMATION MODAL -->
-<div id="modal">
+<div id="confirmationModal">
   <div class="modal-box">
-    <h2>Purchase Successful 🎉</h2>
-    <p>Your seats have been reserved.</p>
-    <button id="closeModal">Close</button>
+    <h2>Purchase Successful</h2>
+    <p id="purchaseDetails"></p>
+    <button onclick="closeModal()">Close</button>
   </div>
 </div>
 
-<script>
-  const seatsContainer = document.getElementById("seats");
-  const summary = document.getElementById("summary");
-  const confirmBtn = document.getElementById("confirm");
-  const modal = document.getElementById("modal");
-  const closeModal = document.getElementById("closeModal");
-
-  const adultBtn = document.getElementById("adultBtn");
-  const childBtn = document.getElementById("childBtn");
-
-  let currentType = "adult";
-  let selectedSeats = [];
-
-  const prices = {
-    adult: 10,
-    child: 6
-  };
-
-  adultBtn.onclick = () => currentType = "adult";
-  childBtn.onclick = () => currentType = "child";
-
-  // CREATE FREE SEATS
-  for (let i = 1; i <= 60; i++) {
-    const seat = document.createElement("div");
-    seat.classList.add("seat");
-    seat.dataset.id = i;
-
-    seat.onclick = () => {
-      const existing = selectedSeats.find(s => s.id === i);
-
-      if (existing) {
-        selectedSeats = selectedSeats.filter(s => s.id !== i);
-        seat.classList.remove("adult", "child");
-      } else {
-        selectedSeats.push({ id: i, type: currentType });
-        seat.classList.add(currentType);
-      }
-
-      updateSummary();
-    };
-
-    seatsContainer.appendChild(seat);
-  }
-
-  function updateSummary() {
-    let total = 0;
-    selectedSeats.forEach(s => total += prices[s.type]);
-
-    summary.innerHTML = `
-      Selected seats: ${selectedSeats.length}<br>
-      Total: $${total}
-    `;
-  }
-
-  confirmBtn.onclick = () => {
-    if (selectedSeats.length === 0) return;
-    modal.style.display = "flex";
-  };
-
-  closeModal.onclick = () => {
-    modal.style.display = "none";
-  };
-</script>
+<script type="module" src="seats.js"></script>
 
 </body>
 </html>
