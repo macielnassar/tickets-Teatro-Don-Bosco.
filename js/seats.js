@@ -1,4 +1,7 @@
-// 🔐 PROTEGER PÁGINA
+import { db } from "./firebase.js";
+import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// 🔐 PROTEGER
 const user = JSON.parse(localStorage.getItem("user"));
 if (!user) {
   window.location.href = "index.html";
@@ -15,25 +18,17 @@ const adultBtn = document.getElementById("adultMode");
 const childBtn = document.getElementById("childMode");
 
 // ESTADO
-let mode = "adult"; // adult o child
+let mode = "adult";
 let selectedAdults = [];
 let selectedChildren = [];
 
-// GENERAR ASIENTOS
+// CREAR ASIENTOS
 for (let i = 1; i <= 50; i++) {
   const seat = document.createElement("div");
   seat.classList.add("seat");
   seat.dataset.id = i;
 
-  // Cargar ocupados guardados
-  const occupied = JSON.parse(localStorage.getItem("occupiedSeats")) || [];
-  if (occupied.includes(i)) {
-    seat.classList.add("occupied");
-  }
-
   seat.addEventListener("click", () => {
-    if (seat.classList.contains("occupied")) return;
-
     const id = Number(seat.dataset.id);
 
     if (mode === "adult") {
@@ -61,17 +56,11 @@ for (let i = 1; i <= 50; i++) {
 }
 
 // CAMBIO DE MODO
-adultBtn.onclick = () => {
-  mode = "adult";
-};
+adultBtn.onclick = () => mode = "adult";
+childBtn.onclick = () => mode = "child";
 
-childBtn.onclick = () => {
-  mode = "child";
-};
-
-// ACTUALIZAR RESUMEN
+// RESUMEN
 function updateSummary() {
-  const totalSeats = selectedAdults.length + selectedChildren.length;
   const total =
     selectedAdults.length * 10 +
     selectedChildren.length * 6;
@@ -83,41 +72,12 @@ function updateSummary() {
   `;
 }
 
-// CONFIRMAR
-confirmBtn.onclick = () => {
+// 🔥 GUARDAR EN FIREBASE
+confirmBtn.onclick = async () => {
   if (selectedAdults.length === 0 && selectedChildren.length === 0) {
     alert("Selecciona al menos un asiento");
     return;
   }
 
-  // GUARDAR OCUPADOS
-  let occupied = JSON.parse(localStorage.getItem("occupiedSeats")) || [];
-
-  const allSelected = [...selectedAdults, ...selectedChildren];
-  occupied = [...new Set([...occupied, ...allSelected])];
-
-  localStorage.setItem("occupiedSeats", JSON.stringify(occupied));
-
-  // GUARDAR RESERVA DEL USUARIO
-  const reservation = {
-    user: user.email,
-    adults: selectedAdults,
-    children: selectedChildren
-  };
-
-  localStorage.setItem("lastReservation", JSON.stringify(reservation));
-
-  // MOSTRAR MODAL
-  purchaseDetails.innerHTML = `
-    Adults: ${selectedAdults.join(", ") || "None"} <br>
-    Children: ${selectedChildren.join(", ") || "None"}
-  `;
-
-  modal.style.display = "flex";
-};
-
-// CERRAR MODAL
-window.closeModal = function () {
-  modal.style.display = "none";
-  location.reload();
-};
+  try {
+    await addDo
