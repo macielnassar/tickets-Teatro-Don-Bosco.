@@ -48,3 +48,6 @@ auth.onAuthStateChanged(async (user) => {
     `;
   });
 });
+    `;
+  });
+});
