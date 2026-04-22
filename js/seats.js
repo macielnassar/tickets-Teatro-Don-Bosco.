@@ -1,116 +1,123 @@
-import { db } from "./firebase.js";
-import {
-  collection,
-  addDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+// 🔐 PROTEGER PÁGINA
+const user = JSON.parse(localStorage.getItem("user"));
+if (!user) {
+  window.location.href = "index.html";
+}
 
-document.addEventListener("DOMContentLoaded", () => {
-  const seatsContainer = document.getElementById("seats");
-  const summary = document.getElementById("summary");
-  const confirmBtn = document.getElementById("confirm");
-  const modal = document.getElementById("confirmationModal");
-  const detailsText = document.getElementById("purchaseDetails");
+// ELEMENTOS
+const seatsContainer = document.getElementById("seats");
+const summary = document.getElementById("summary");
+const confirmBtn = document.getElementById("confirm");
+const modal = document.getElementById("confirmationModal");
+const purchaseDetails = document.getElementById("purchaseDetails");
 
-  const adultBtn = document.getElementById("adultMode");
-  const childBtn = document.getElementById("childMode");
+const adultBtn = document.getElementById("adultMode");
+const childBtn = document.getElementById("childMode");
 
-  let currentType = "adult";
-  let selectedSeats = [];
+// ESTADO
+let mode = "adult"; // adult o child
+let selectedAdults = [];
+let selectedChildren = [];
 
-  const prices = {
-    adult: 10,
-    child: 6
-  };
+// GENERAR ASIENTOS
+for (let i = 1; i <= 50; i++) {
+  const seat = document.createElement("div");
+  seat.classList.add("seat");
+  seat.dataset.id = i;
 
-  adultBtn.onclick = () => {
-    currentType = "adult";
-  };
+  // Cargar ocupados guardados
+  const occupied = JSON.parse(localStorage.getItem("occupiedSeats")) || [];
+  if (occupied.includes(i)) {
+    seat.classList.add("occupied");
+  }
 
-  childBtn.onclick = () => {
-    currentType = "child";
-  };
+  seat.addEventListener("click", () => {
+    if (seat.classList.contains("occupied")) return;
 
-  // CREAR ASIENTOS
-  for (let i = 1; i <= 60; i++) {
-    const seat = document.createElement("div");
-    seat.className = "seat";
-    seat.dataset.number = i;
+    const id = Number(seat.dataset.id);
 
-    seat.onclick = () => {
-      const found = selectedSeats.find(s => s.number == i);
-
-      if (found) {
-        selectedSeats = selectedSeats.filter(s => s.number != i);
-        seat.classList.remove("selected-adult", "selected-child");
+    if (mode === "adult") {
+      if (selectedAdults.includes(id)) {
+        selectedAdults = selectedAdults.filter(s => s !== id);
+        seat.classList.remove("selected-adult");
       } else {
-        selectedSeats.push({
-          number: i,
-          type: currentType
-        });
-
-        seat.classList.add(
-          currentType === "adult"
-            ? "selected-adult"
-            : "selected-child"
-        );
+        selectedAdults.push(id);
+        seat.classList.add("selected-adult");
       }
-
-      updateSummary();
-    };
-
-    seatsContainer.appendChild(seat);
-  }
-
-  function updateSummary() {
-    let total = 0;
-
-    selectedSeats.forEach(seat => {
-      total += prices[seat.type];
-    });
-
-    summary.innerHTML = `
-      Selected seats: ${selectedSeats.length}<br>
-      Total: $${total}
-    `;
-  }
-
-  confirmBtn.onclick = async () => {
-    if (selectedSeats.length === 0) {
-      alert("Please select at least one seat.");
-      return;
+    } else {
+      if (selectedChildren.includes(id)) {
+        selectedChildren = selectedChildren.filter(s => s !== id);
+        seat.classList.remove("selected-child");
+      } else {
+        selectedChildren.push(id);
+        seat.classList.add("selected-child");
+      }
     }
 
-    const seatNumbers = selectedSeats.map(s => s.number);
-    const total = selectedSeats.reduce((sum, s) => sum + prices[s.type], 0);
+    updateSummary();
+  });
 
-    try {
-      await addDoc(collection(db, "tickets"), {
-        seats: seatNumbers,
-        totalPaid: total
-      });
+  seatsContainer.appendChild(seat);
+}
 
-      document.querySelectorAll(".seat").forEach(seat => {
-        if (seatNumbers.includes(Number(seat.dataset.number))) {
-          seat.classList.remove("selected-adult", "selected-child");
-          seat.classList.add("occupied");
-        }
-      });
+// CAMBIO DE MODO
+adultBtn.onclick = () => {
+  mode = "adult";
+};
 
-      detailsText.innerHTML = `
-        Seats: ${seatNumbers.join(", ")}<br>
-        Total Paid: $${total}
-      `;
+childBtn.onclick = () => {
+  mode = "child";
+};
 
-      selectedSeats = [];
-      updateSummary();
-      modal.style.display = "flex";
+// ACTUALIZAR RESUMEN
+function updateSummary() {
+  const totalSeats = selectedAdults.length + selectedChildren.length;
+  const total =
+    selectedAdults.length * 10 +
+    selectedChildren.length * 6;
 
-    } catch (error) {
-      alert(error.message);
-    }
+  summary.innerHTML = `
+    Adult seats: ${selectedAdults.length} <br>
+    Child seats: ${selectedChildren.length} <br>
+    Total: $${total}
+  `;
+}
+
+// CONFIRMAR
+confirmBtn.onclick = () => {
+  if (selectedAdults.length === 0 && selectedChildren.length === 0) {
+    alert("Selecciona al menos un asiento");
+    return;
+  }
+
+  // GUARDAR OCUPADOS
+  let occupied = JSON.parse(localStorage.getItem("occupiedSeats")) || [];
+
+  const allSelected = [...selectedAdults, ...selectedChildren];
+  occupied = [...new Set([...occupied, ...allSelected])];
+
+  localStorage.setItem("occupiedSeats", JSON.stringify(occupied));
+
+  // GUARDAR RESERVA DEL USUARIO
+  const reservation = {
+    user: user.email,
+    adults: selectedAdults,
+    children: selectedChildren
   };
 
-  window.closeModal = () => {
-    modal.style.display = "none";
-  };
-});
+  localStorage.setItem("lastReservation", JSON.stringify(reservation));
+
+  // MOSTRAR MODAL
+  purchaseDetails.innerHTML = `
+    Adults: ${selectedAdults.join(", ") || "None"} <br>
+    Children: ${selectedChildren.join(", ") || "None"}
+  `;
+
+  modal.style.display = "flex";
+};
+
+// CERRAR MODAL
+window.closeModal = function () {
+  modal.style.display = "none";
+  location.reload();
+};
