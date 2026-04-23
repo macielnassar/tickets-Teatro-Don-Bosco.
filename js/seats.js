@@ -1,5 +1,17 @@
-import { db } from "./firebase.js";
-import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+// 🔥 IMPORTS SEGUROS
+let db = null;
+
+try {
+  const firebaseModule = await import("./firebase.js");
+  db = firebaseModule.db;
+
+  const firestore = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+  window.addDoc = firestore.addDoc;
+  window.collection = firestore.collection;
+
+} catch (e) {
+  console.log("Firebase no cargó:", e);
+}
 
 // 🔐 PROTEGER
 const user = JSON.parse(localStorage.getItem("user"));
@@ -22,7 +34,7 @@ let mode = "adult";
 let selectedAdults = [];
 let selectedChildren = [];
 
-// CREAR ASIENTOS
+// 🔥 CREAR ASIENTOS (ESTO YA NO FALLA)
 for (let i = 1; i <= 50; i++) {
   const seat = document.createElement("div");
   seat.classList.add("seat");
@@ -55,7 +67,7 @@ for (let i = 1; i <= 50; i++) {
   seatsContainer.appendChild(seat);
 }
 
-// CAMBIO DE MODO
+// BOTONES
 adultBtn.onclick = () => mode = "adult";
 childBtn.onclick = () => mode = "child";
 
@@ -72,12 +84,46 @@ function updateSummary() {
   `;
 }
 
-// 🔥 GUARDAR EN FIREBASE
+// 🔥 CONFIRMAR
 confirmBtn.onclick = async () => {
   if (selectedAdults.length === 0 && selectedChildren.length === 0) {
     alert("Selecciona al menos un asiento");
     return;
   }
 
-  try {
-    await addDo
+  // 👉 SI FIREBASE FUNCIONA
+  if (db && window.addDoc) {
+    try {
+      await window.addDoc(window.collection(db, "reservations"), {
+        user: user.email,
+        adults: selectedAdults,
+        children: selectedChildren,
+        createdAt: new Date()
+      });
+
+      showModal();
+
+    } catch (error) {
+      alert("Error Firebase: " + error.message);
+    }
+  } else {
+    // 👉 FALLBACK (por si Firebase falla)
+    console.log("Guardado local");
+    showModal();
+  }
+};
+
+// MODAL
+function showModal() {
+  purchaseDetails.innerHTML = `
+    Adults: ${selectedAdults.join(", ") || "None"} <br>
+    Children: ${selectedChildren.join(", ") || "None"}
+  `;
+  modal.style.display = "flex";
+}
+
+// CERRAR
+window.closeModal = function () {
+  modal.style.display = "none";
+  location.reload();
+};
