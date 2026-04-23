@@ -1,5 +1,5 @@
 import { db } from "./firebase.js";
-import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // 🔐 PROTEGER
 const user = JSON.parse(localStorage.getItem("user"));
@@ -21,38 +21,63 @@ const childBtn = document.getElementById("childMode");
 let mode = "adult";
 let selectedAdults = [];
 let selectedChildren = [];
+let occupiedSeats = [];
+
+// 🔥 OBTENER ASIENTOS OCUPADOS DE FIREBASE
+async function loadOccupiedSeats() {
+  const querySnapshot = await getDocs(collection(db, "reservations"));
+
+  querySnapshot.forEach(doc => {
+    const data = doc.data();
+
+    occupiedSeats.push(...data.adults);
+    occupiedSeats.push(...data.children);
+  });
+}
 
 // 🔥 CREAR ASIENTOS
-for (let i = 1; i <= 50; i++) {
-  const seat = document.createElement("div");
-  seat.classList.add("seat");
-  seat.dataset.id = i;
+async function createSeats() {
 
-  seat.addEventListener("click", () => {
-    const id = Number(seat.dataset.id);
+  await loadOccupiedSeats();
 
-    if (mode === "adult") {
-      if (selectedAdults.includes(id)) {
-        selectedAdults = selectedAdults.filter(s => s !== id);
-        seat.classList.remove("selected-adult");
-      } else {
-        selectedAdults.push(id);
-        seat.classList.add("selected-adult");
-      }
-    } else {
-      if (selectedChildren.includes(id)) {
-        selectedChildren = selectedChildren.filter(s => s !== id);
-        seat.classList.remove("selected-child");
-      } else {
-        selectedChildren.push(id);
-        seat.classList.add("selected-child");
-      }
+  for (let i = 1; i <= 50; i++) {
+    const seat = document.createElement("div");
+    seat.classList.add("seat");
+    seat.dataset.id = i;
+
+    // 🔴 MARCAR OCUPADOS
+    if (occupiedSeats.includes(i)) {
+      seat.classList.add("occupied");
     }
 
-    updateSummary();
-  });
+    seat.addEventListener("click", () => {
+      if (seat.classList.contains("occupied")) return;
 
-  seatsContainer.appendChild(seat);
+      const id = Number(seat.dataset.id);
+
+      if (mode === "adult") {
+        if (selectedAdults.includes(id)) {
+          selectedAdults = selectedAdults.filter(s => s !== id);
+          seat.classList.remove("selected-adult");
+        } else {
+          selectedAdults.push(id);
+          seat.classList.add("selected-adult");
+        }
+      } else {
+        if (selectedChildren.includes(id)) {
+          selectedChildren = selectedChildren.filter(s => s !== id);
+          seat.classList.remove("selected-child");
+        } else {
+          selectedChildren.push(id);
+          seat.classList.add("selected-child");
+        }
+      }
+
+      updateSummary();
+    });
+
+    seatsContainer.appendChild(seat);
+  }
 }
 
 // BOTONES
@@ -72,7 +97,7 @@ function updateSummary() {
   `;
 }
 
-// 🔥 FIREBASE
+// 🔥 GUARDAR EN FIREBASE
 confirmBtn.onclick = async () => {
   if (selectedAdults.length === 0 && selectedChildren.length === 0) {
     alert("Selecciona al menos un asiento");
@@ -98,6 +123,9 @@ confirmBtn.onclick = async () => {
     alert("Error Firebase: " + error.message);
   }
 };
+
+// INICIAR
+createSeats();
 
 // CERRAR
 window.closeModal = function () {
