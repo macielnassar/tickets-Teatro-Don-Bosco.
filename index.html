@@ -101,6 +101,7 @@ function register() {
   localStorage.setItem("registeredUser", JSON.stringify({ email, password }));
 
   alert("Cuenta creada correctamente");
+  error.classList.add("hidden"); // limpiar error
   showLogin();
 }
 
@@ -120,9 +121,13 @@ function login() {
   if (email === savedUser.email && password === savedUser.password) {
     localStorage.setItem("user", JSON.stringify({ email }));
 
-    // 👉 AQUÍ VA LA SIGUIENTE PÁGINA
     window.location.href = "home.html";
   } else {
     error.classList.remove("hidden");
   }
 }
+
+</script>
+
+</body>
+</html>
