@@ -1,42 +1,60 @@
-<script type="module">
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+</head>
+<body>
 
-import { auth } from "./js/firebase.js";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  <h1>Iniciar Sesión</h1>
 
-// REGISTRO
-window.register = async function() {
-  const email = document.getElementById("regEmail").value;
-  const password = document.getElementById("regPassword").value;
+  <input id="loginEmail" placeholder="Correo">
+  <input id="loginPassword" type="password" placeholder="Contraseña">
+  <button onclick="login()">Entrar</button>
 
-  try {
-    await createUserWithEmailAndPassword(auth, email, password);
-    alert("Cuenta creada");
-  } catch (e) {
-    alert(e.message);
-  }
-};
+  <h2>Registro</h2>
 
-// LOGIN
-window.login = async function() {
-  const email = document.getElementById("loginEmail").value;
-  const password = document.getElementById("loginPassword").value;
+  <input id="regEmail" placeholder="Correo">
+  <input id="regPassword" type="password" placeholder="Contraseña">
+  <button onclick="register()">Registrarse</button>
 
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+  <script type="module">
+    import { auth } from "./js/firebase.js";
+    import {
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-    // Guardar sesión simple
-    localStorage.setItem("user", JSON.stringify({
-      email: userCredential.user.email
-    }));
+    window.register = async function() {
+      const email = document.getElementById("regEmail").value;
+      const password = document.getElementById("regPassword").value;
 
-    window.location.href = "home.html";
+      try {
+        await createUserWithEmailAndPassword(auth, email, password);
+        alert("Cuenta creada");
+      } catch (e) {
+        alert(e.message);
+      }
+    };
 
-  } catch (e) {
-    alert("Error: " + e.message);
-  }
-};
+    window.login = async function() {
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
 
-</script>
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+        localStorage.setItem("user", JSON.stringify({
+          email: userCredential.user.email
+        }));
+
+        window.location.href = "home.html";
+
+      } catch (e) {
+        alert("Error: " + e.message);
+      }
+    };
+  </script>
+
+</body>
+</html>
